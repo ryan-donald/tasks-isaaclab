@@ -6,3 +6,5 @@ Currently, the only task within this package is my 'Ryan-Reach-SO-ARM101-Normali
 
 - To install this package, simply run 'python -m pip install -e source/ryan_tasks' in the base directory.
 - Afterwards, this task can be used in the same method as any other IsaacLab task.
+- To use this in your code, simply add the import "import ryan_tasks" in your training scripts.
+- The 'Ryan-Reach-SO-ARM101-Normalized-v0' task will be now be available to train your agents with like any other IsaacLab task.

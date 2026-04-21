@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025, Ryan Donald
+# Copyright (c) 2025-2026, Ryan Donald
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
