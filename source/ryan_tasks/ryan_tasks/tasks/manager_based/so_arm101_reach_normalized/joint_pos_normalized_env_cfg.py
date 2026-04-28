@@ -10,13 +10,13 @@ to match the real SO-101 robot hardware format.
 """
 
 from isaaclab.utils import configclass
-from isaaclab.managers import ObservationTermCfg as ObsTerm, ObservationGroupCfg as ObsGroup
+from isaaclab.managers import ObservationTermCfg as ObsTerm, ObservationGroupCfg as ObsGroup, EventTermCfg as EventTerm, SceneEntityCfg
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
 import math
 import isaaclab_tasks.manager_based.manipulation.reach.mdp as mdp
 from isaaclab_tasks.manager_based.manipulation.reach.reach_env_cfg import ReachEnvCfg
-from isaaclab_tasks.manager_based.manipulation.robots.so_arm101_urdf_cfg import SO_ARM101_URDF_CFG
+from ryan_tasks.tasks.robots.so_arm101_urdf_cfg import SO_ARM101_URDF_CFG
 
 
 @configclass
@@ -106,6 +106,22 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         # Replace observation config
         self.observations.policy = NormalizedPolicyCfg()
 
+@configclass
+class EventCfg:
+    """Configuration for domain randomization of stiffness and damping coefficients per joint.
+       Current randomization is between 50% and 150% of the values defined above."""
+    
+    randomize_gains = EventTerm(
+        func=mdp.randomize_actuator_gains,
+        mode="reset",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+            "stiffness_distribution_params": (0.5, 1.5),
+            "damping_distribution_params": (0.5, 1.5),
+            "operation": "scale",
+            "distribution": "uniform",
+        },
+    )
 
 @configclass
 class SoArm101ReachNormalizedEnvCfg_PLAY(SoArm101ReachNormalizedEnvCfg):
