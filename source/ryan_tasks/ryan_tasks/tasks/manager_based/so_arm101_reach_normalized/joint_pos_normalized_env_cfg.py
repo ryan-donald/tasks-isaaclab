@@ -54,10 +54,14 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         # 400Hz timesteps in simulation
         # env step every timestep
         # total steps per episode = 400Hz * 12s
-        self.sim_dt = 1/400.0 
+        hz = 400.0
+        self.sim_dt = 1/hz
         self.decimation = 1 
         self.sim.render_interval = self.decimation
         self.episode_length_s = 12.0
+
+        self.curriculum.action_rate.params["num_steps"] = 1_500 * hz * self.episode_length_s
+        self.curriculum.joint_vel.params["num_steps"] = 1_500 * hz * self.episode_length_s
 
         # Using normalized joint positions. [-100, 100].
         # Arm is controlled with joint positions. Using normalized is just a sim2real consideration,
