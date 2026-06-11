@@ -49,7 +49,8 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
         "arm": ImplicitActuatorCfg(
             joint_names_expr=["shoulder_.*", "elbow_flex", "wrist_.*"],
             effort_limit_sim=1.9,
-            velocity_limit_sim=4.0,
+            velocity_limit_sim=5.5,
+            armature=0.03,
             stiffness={
                 "shoulder_pan": 400.0,
                 "shoulder_lift": 400.0,
@@ -76,6 +77,7 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
             joint_names_expr=["gripper"],
             effort_limit_sim=2.5,
             velocity_limit_sim=3.18,
+            armature=0.03,
             stiffness=400.0,
             damping=40.0,
         ),

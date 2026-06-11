@@ -5,7 +5,7 @@
 
   <!-- Materials -->
   <material name="mat_3d_printed">
-    <color rgba="1.0 0.82 0.12 1.0"/>
+    <color rgba="0.5 0.5 0.5 1.0"/>
   </material>
   <material name="sts3215">
     <color rgba="0.1 0.1 0.1 1.0"/>
@@ -359,7 +359,7 @@
     <parent link="wrist_link"/>
     <child link="gripper_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="10" lower="-2.74385" upper="2.84121"/>
+    <limit effort="10" velocity="10" lower="-3.08586" upper="3.19579"/>
   </joint>
 
   <transmission name="wrist_roll_trans">
@@ -379,7 +379,7 @@
     <parent link="lower_arm_link"/>
     <child link="wrist_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="10" lower="-1.65806" upper="1.65806"/>
+    <limit effort="10" velocity="10" lower="-1.84329" upper="1.75850"/>
   </joint>
 
   <transmission name="wrist_flex_trans">
@@ -400,7 +400,7 @@
     <parent link="upper_arm_link"/>
     <child link="lower_arm_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="10" lower="-1.69" upper="1.69"/>
+    <limit effort="10" velocity="10" lower="-1.69582" upper="1.69582"/>
   </joint>
 
   <transmission name="elbow_flex_trans">
@@ -420,7 +420,7 @@
     <parent link="shoulder_link"/>
     <child link="upper_arm_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="10" lower="-1.74533" upper="1.74533"/>
+    <limit effort="10" velocity="10" lower="-1.85151" upper="1.85151"/>
   </joint>
 
   <transmission name="shoulder_lift_trans">
@@ -440,7 +440,7 @@
     <parent link="base_link"/>
     <child link="shoulder_link"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="10" lower="-1.91986" upper="1.91986"/>
+    <limit effort="10" velocity="10" lower="-2.07164" upper="2.07164"/>
   </joint>
 
   <transmission name="shoulder_pan_trans">
