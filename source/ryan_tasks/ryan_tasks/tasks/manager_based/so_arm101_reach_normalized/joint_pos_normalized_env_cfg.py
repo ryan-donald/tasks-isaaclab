@@ -10,7 +10,7 @@ to match the real SO-101 robot hardware format.
 """
 
 from isaaclab.utils import configclass
-from isaaclab.managers import ObservationTermCfg as ObsTerm, ObservationGroupCfg as ObsGroup, EventTermCfg as EventTerm, SceneEntityCfg, CurriculumTermCfg as CurrTerm
+from isaaclab.managers import ObservationTermCfg as ObsTerm, ObservationGroupCfg as ObsGroup, EventTermCfg as EventTerm, SceneEntityCfg, CurriculumTermCfg as CurrTerm, RewardTermCfg as RewTerm
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
 import math
@@ -185,8 +185,21 @@ class SoArm101ReachNormalizedEnvCfg_FIXEDDELAY(SoArm101ReachNormalizedEnvCfg):
 
     def __post_init__(self):
         super().__post_init__()
-        self.events.randomize_action_delay = EventTerm(
-            func=mdp.randomize_action_delay,
-            mode="reset",
-            params={"action_name": "arm_action", "min_delay": 5, "max_delay": 5},
+        # self.events.randomize_action_delay = EventTerm(
+        #     func=mdp.randomize_action_delay,
+        #     mode="reset",
+        #     params={"action_name": "arm_action", "min_delay": 5, "max_delay": 5},
+        # )
+
+        # tight tracking term with a small std, gives a strong gradient within the
+        # last couple cm of the goal so the agent locks on instead of hovering.
+        self.rewards.end_effector_position_tracking_tight = RewTerm(
+            func=mdp.position_command_error_tanh,
+            weight=0.05,
+            params={
+                "asset_cfg": SceneEntityCfg("robot", body_names=["gripper_frame_link"]),
+                "std": 0.02,
+                "command_name": "ee_pose",
+            },
         )
+        self.rewards.end_effector_position_tracking_fine_grained.weight=0.05
