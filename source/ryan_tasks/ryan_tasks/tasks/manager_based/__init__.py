@@ -4,3 +4,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import gymnasium as gym  # noqa: F401
+
+from . import so_arm101_lift_normalized  # noqa: F401

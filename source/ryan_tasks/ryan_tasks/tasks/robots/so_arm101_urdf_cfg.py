@@ -13,6 +13,7 @@ URDF_ASSETS_DATA_DIR = Path(__file__).resolve().parent
 SO_ARM101_URDF_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
         fix_base=True,
+        merge_fixed_joints=False,
         replace_cylinders_with_capsules=True,
         asset_path=f"{URDF_ASSETS_DATA_DIR}/so101_new_calib.urdf",
         activate_contact_sensors=False,
@@ -25,13 +26,14 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
             solver_position_iteration_count=8,
             solver_velocity_iteration_count=0,
         ),
+        # necessary for newton physics for thsi to be here.
         joint_drive=sim_utils.UrdfConverterCfg.JointDriveCfg(
-            gains=sim_utils.UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=0, damping=0)
+            gains=sim_utils.UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=400, damping=40)
         ),
     ),
     # default starting state
     init_state=ArticulationCfg.InitialStateCfg(
-        rot=(1.0, 0.0, 0.0, 0.0),
+        rot=(0.0, 0.0, 0.0, 1.0),
         joint_pos={
             "shoulder_pan": 0.0,
             "shoulder_lift": 0.0,

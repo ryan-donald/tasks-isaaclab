@@ -9,13 +9,13 @@ This environment uses normalized observations and actions in [-100, +100] range
 to match the real SO-101 robot hardware format.
 """
 
-from isaaclab.utils import configclass
+from isaaclab.utils.configclass import configclass
 from isaaclab.managers import ObservationTermCfg as ObsTerm, ObservationGroupCfg as ObsGroup, EventTermCfg as EventTerm, SceneEntityCfg, CurriculumTermCfg as CurrTerm, RewardTermCfg as RewTerm
-from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
+from isaaclab.utils.noise import UniformNoiseCfg as Unoise
 
 import math
-import isaaclab_tasks.manager_based.manipulation.reach.mdp as mdp
-from isaaclab_tasks.manager_based.manipulation.reach.reach_env_cfg import ReachEnvCfg
+from . import mdp
+from isaaclab_tasks.core.reach.reach_env_cfg import ReachEnvCfg, ReachPhysicsCfg
 from ryan_tasks.tasks.robots.so_arm101_urdf_cfg import SO_ARM101_URDF_CFG
 
 
@@ -43,9 +43,9 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         self.rewards.end_effector_orientation_tracking.params["asset_cfg"].body_names = ["gripper_frame_link"]
 
         # set workspace bounds for SO-ARM101 end-effector targets
-        self.commands.ee_pose.ranges.pos_x = (0.2, 0.25)
+        self.commands.ee_pose.ranges.pos_x = (0.19, 0.29)
         self.commands.ee_pose.ranges.pos_y = (-0.2, 0.2)
-        self.commands.ee_pose.ranges.pos_z = (0.15, 0.3)
+        self.commands.ee_pose.ranges.pos_z = (0.10, 0.3)
 
         self.commands.ee_pose.ranges.pitch = (math.pi, math.pi)
 
@@ -99,9 +99,6 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         # Ignore gripper orientation, just need to get tip to correct location.
         self.rewards.end_effector_orientation_tracking.weight = 0.0
 
-        # the four joints we are concerned with and controlling. for reach, gripper
-        # doesn't have an impact on the end-effector location, and wrist_roll
-        # has minimal, added a lot of noise during training.
         obs_joints = ["shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex"]
 
         @configclass
@@ -203,3 +200,26 @@ class SoArm101ReachNormalizedEnvCfg_FIXEDDELAY(SoArm101ReachNormalizedEnvCfg):
             },
         )
         self.rewards.end_effector_position_tracking_fine_grained.weight=0.05
+
+
+@configclass
+class SoArm101ReachNormalizedNewtonEnvCfg(SoArm101ReachNormalizedEnvCfg):
+    # reach env for newton backend, instead of default physx
+
+    def __post_init__(self):
+        super().__post_init__()
+        # force the Newton MJWarp backend, reusing the parent preset's tuned cfg
+        self.sim.physics = ReachPhysicsCfg().newton_mjwarp
+        # stiff position-controlled arm (stiffness 400-600) needs sub-stepping for
+        # MJWarp stability; the inherited preset's num_substeps=1 diverges.
+        self.sim.physics.num_substeps = 8
+
+
+@configclass
+class SoArm101ReachNormalizedNewtonEnvCfg_PLAY(SoArm101ReachNormalizedEnvCfg_PLAY):
+    # play/eval env for newton backend
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.sim.physics = ReachPhysicsCfg().newton_mjwarp
+        self.sim.physics.num_substeps = 8
