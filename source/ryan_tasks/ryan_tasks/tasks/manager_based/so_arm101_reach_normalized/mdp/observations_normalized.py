@@ -7,11 +7,11 @@
 
 from __future__ import annotations
 
-import torch
 from typing import TYPE_CHECKING
 
+import torch
 from isaaclab.assets import Articulation
-from isaaclab.managers import SceneEntityCfg, ManagerTermBase
+from isaaclab.managers import ManagerTermBase, SceneEntityCfg
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv
@@ -28,15 +28,15 @@ def joint_pos_normalized_100(
     lower = joint_limits[:, :, 0]
     upper = joint_limits[:, :, 1]
 
-    # Normalize to [-100, 100]: 200 * (pos - lower) / (upper - lower) - 100
+    # normalize to [-100, 100]: 200 * (pos - lower) / (upper - lower) - 100
     normalized = 200.0 * (joint_pos - lower) / (upper - lower) - 100.0
     return normalized
 
 
 def joint_vel_normalized(
-    env: ManagerBasedEnv, 
+    env: ManagerBasedEnv,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    velocity_scale: float = 1.0
+    velocity_scale: float = 1.0,
 ) -> torch.Tensor:
     # joint velocities in rad/s
 
@@ -46,17 +46,22 @@ def joint_vel_normalized(
 
 
 class joint_vel_finite_diff(ManagerTermBase):
-    # finite difference joint velocities, matches how the so101 sim2real deployment works.
+    # finite difference joint velocities, matches how the so101 sim2real
+    # deployment works.
 
     def __init__(self, cfg, env: ManagerBasedEnv):
         super().__init__(cfg, env)
-        self._asset_cfg: SceneEntityCfg = cfg.params.get("asset_cfg", SceneEntityCfg("robot"))
+        self._asset_cfg: SceneEntityCfg = cfg.params.get(
+            "asset_cfg", SceneEntityCfg("robot")
+        )
         self._asset_cfg.resolve(env.scene)
         self._asset: Articulation = env.scene[self._asset_cfg.name]
         # control timestep (decimation * sim_dt), i.e. the interval between policy
         # observations — the same dt the deployment differences over.
         self._dt = env.step_dt
-        num_joints = self._asset.data.joint_pos.torch[:, self._asset_cfg.joint_ids].shape[1]
+        num_joints = self._asset.data.joint_pos.torch[
+            :, self._asset_cfg.joint_ids
+        ].shape[1]
         self._prev_pos = torch.zeros(env.num_envs, num_joints, device=env.device)
         self._has_prev = torch.zeros(env.num_envs, dtype=torch.bool, device=env.device)
 
@@ -85,18 +90,17 @@ class joint_vel_finite_diff(ManagerTermBase):
 def joint_pos_normalized_100_rel(
     env: ManagerBasedEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")
 ) -> torch.Tensor:
-    # Joint positions relative to default, normalized to [-100, 100]
-    
+    # joint positions relative to default, normalized to [-100, 100].
+
     asset: Articulation = env.scene[asset_cfg.name]
     joint_pos = asset.data.joint_pos.torch[:, asset_cfg.joint_ids]
     default_pos = asset.data.default_joint_pos.torch[:, asset_cfg.joint_ids]
     joint_limits = asset.data.soft_joint_pos_limits.torch[:, asset_cfg.joint_ids, :]
     lower = joint_limits[:, :, 0]
     upper = joint_limits[:, :, 1]
-    
-    # Normalize both current and default to [-100, 100]
+
+    # normalize both current and default to [-100, 100], return the difference.
     current_norm = 200.0 * (joint_pos - lower) / (upper - lower) - 100.0
     default_norm = 200.0 * (default_pos - lower) / (upper - lower) - 100.0
-    
-    # Return relative difference
+
     return current_norm - default_norm

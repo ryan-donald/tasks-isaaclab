@@ -10,3 +10,4 @@ from isaaclab_tasks.manager_based.manipulation.reach.mdp import *  # noqa: F401,
 
 from .actions_normalized import *  # noqa: F401, F403
 from .observations_normalized import *  # noqa: F401, F403
+from .rewards_normalized import *  # noqa: F401, F403

@@ -7,11 +7,11 @@
 
 from __future__ import annotations
 
-import torch
 from collections.abc import Sequence
 from dataclasses import MISSING
 from typing import TYPE_CHECKING
 
+import torch
 from isaaclab.assets.articulation import Articulation
 from isaaclab.managers.action_manager import ActionTerm, ActionTermCfg
 from isaaclab.utils.configclass import configclass
@@ -22,8 +22,7 @@ if TYPE_CHECKING:
 
 @configclass
 class NormalizedJointPositionActionCfg(ActionTermCfg):
-    #Configuration for position controlled joint action term matching lerobot
-
+    # configuration for position controlled joint action term matching lerobot.
 
     class_type: type[ActionTerm] = MISSING
     joint_names: list[str] = MISSING
@@ -37,7 +36,8 @@ class NormalizedJointPositionActionCfg(ActionTermCfg):
 
 
 class NormalizedJointPositionAction(ActionTerm):
-   # action term that receives actions in normalized space [-100, 100] and translates to radians
+    # action term that receives actions in normalized space [-100, 100] and
+    # translates them to radians.
 
     cfg: NormalizedJointPositionActionCfg
 
@@ -52,16 +52,20 @@ class NormalizedJointPositionAction(ActionTerm):
 
         # log info for debugging
         print(
-            f"[NormalizedJointPositionAction] Resolved joint names for {self.cfg.asset_name}:"
-            f" {self._joint_names} [{self._joint_ids}]"
+            f"[NormalizedJointPositionAction] Resolved joint names for"
+            f" {self.cfg.asset_name}: {self._joint_names} [{self._joint_ids}]"
         )
 
         # create tensors for raw and processed actions
-        self._raw_actions = torch.zeros(env.num_envs, self.action_dim, device=self.device)
+        self._raw_actions = torch.zeros(
+            env.num_envs, self.action_dim, device=self.device
+        )
         self._processed_actions = torch.zeros_like(self._raw_actions)
 
         # get joint limits for conversion
-        self._joint_limits = self._asset.data.soft_joint_pos_limits.torch[:, self._joint_ids, :].clone()
+        self._joint_limits = self._asset.data.soft_joint_pos_limits.torch[
+            :, self._joint_ids, :
+        ].clone()
 
         # calculate offset in normalized space
         if cfg.use_default_offset:
@@ -74,7 +78,8 @@ class NormalizedJointPositionAction(ActionTerm):
             self._offset = cfg.offset
 
         print(
-            f"[NormalizedJointPositionAction] Using offset (normalized [-100,+100] space): {self._offset}"
+            f"[NormalizedJointPositionAction] Using offset"
+            f" (normalized [-100,+100] space): {self._offset}"
         )
 
         # action delay buffer, per env action delay.
@@ -86,11 +91,10 @@ class NormalizedJointPositionAction(ActionTerm):
             self._delay_per_env = torch.full(
                 (env.num_envs,), self._max_delay, dtype=torch.long, device=self.device
             )
-            print(f"[NormalizedJointPositionAction] Max action delay: {self._max_delay} step(s)")
-
-    """
-    Properties.
-    """
+            print(
+                f"[NormalizedJointPositionAction] Max action delay:"
+                f" {self._max_delay} step(s)"
+            )
 
     @property
     def action_dim(self) -> int:
@@ -104,10 +108,6 @@ class NormalizedJointPositionAction(ActionTerm):
     def processed_actions(self) -> torch.Tensor:
         return self._processed_actions
 
-    """
-    Operations.
-    """
-
     def process_actions(self, actions: torch.Tensor):
         # store the raw actions
         self._raw_actions[:] = actions
@@ -116,7 +116,9 @@ class NormalizedJointPositionAction(ActionTerm):
 
         if self._max_delay > 0:
             # newest action -> slot [-1]; buffer rolls so older actions shift down
-            self._action_delay_buf = torch.roll(self._action_delay_buf, shifts=-1, dims=0)
+            self._action_delay_buf = torch.roll(
+                self._action_delay_buf, shifts=-1, dims=0
+            )
             self._action_delay_buf[-1] = self._processed_actions
             # per-env read index: delay d reads slot (max_delay - d)
             read_idx = self._max_delay - self._delay_per_env  # (num_envs,)
@@ -126,12 +128,12 @@ class NormalizedJointPositionAction(ActionTerm):
     def apply_actions(self):
         # clamp to [-100, 100] range
         normalized_clamped = torch.clamp(self._processed_actions, -100.0, 100.0)
-        
+
         # convert from normalized [-100, 100] to radians
         lower = self._joint_limits[:, :, 0]
         upper = self._joint_limits[:, :, 1]
         radians = (normalized_clamped + 100.0) / 200.0 * (upper - lower) + lower
-        
+
         # apply position commands
         self._asset.set_joint_position_target(radians, joint_ids=self._joint_ids)
 
@@ -152,8 +154,12 @@ def randomize_action_delay(
     """Sample a fresh per-env action delay in [min_delay, max_delay] on reset.
 
     ``max_delay`` must not exceed the action term's ``delay_steps`` (the buffer depth).
+    The action term must expose a ``_delay_per_env`` buffer (``delay_steps > 0``); if it
+    does not, the event is a no-op so a misconfigured term can't crash the reset.
     """
     term: NormalizedJointPositionAction = env.action_manager.get_term(action_name)
+    if getattr(term, "_delay_per_env", None) is None:
+        return
     delays = torch.randint(
         min_delay, max_delay + 1, (env_ids.shape[0],), device=term.device
     )
