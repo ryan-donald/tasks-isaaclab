@@ -96,41 +96,41 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         # then progressively learn smoother and slower motions to reach it.
         self.curriculum.action_rate.params["num_steps"] = 4_000 * 24
         self.curriculum.action_rate.params["weight"] = -0.001
-        self.curriculum.action_rate_s2 = CurrTerm(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "action_rate",
-                "weight": -0.005,
-                "num_steps": 8_000 * 24,
-            },
-        )
-        self.curriculum.action_rate_s3 = CurrTerm(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "action_rate",
-                "weight": -0.01,
-                "num_steps": 12_000 * 24,
-            },
-        )
+        # self.curriculum.action_rate_s2 = CurrTerm(
+        #     func=mdp.modify_reward_weight,
+        #     params={
+        #         "term_name": "action_rate",
+        #         "weight": -0.005,
+        #         "num_steps": 8_000 * 24,
+        #     },
+        # )
+        # self.curriculum.action_rate_s3 = CurrTerm(
+        #     func=mdp.modify_reward_weight,
+        #     params={
+        #         "term_name": "action_rate",
+        #         "weight": -0.01,
+        #         "num_steps": 12_000 * 24,
+        #     },
+        # )
 
         self.curriculum.joint_vel.params["num_steps"] = 4_000 * 24
         self.curriculum.joint_vel.params["weight"] = -0.001
-        self.curriculum.joint_vel_s2 = CurrTerm(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "joint_vel",
-                "weight": -0.004,
-                "num_steps": 8_000 * 24,
-            },
-        )
-        self.curriculum.joint_vel_s3 = CurrTerm(
-            func=mdp.modify_reward_weight,
-            params={
-                "term_name": "joint_vel",
-                "weight": -0.008,
-                "num_steps": 12_000 * 24,
-            },
-        )
+        # self.curriculum.joint_vel_s2 = CurrTerm(
+        #     func=mdp.modify_reward_weight,
+        #     params={
+        #         "term_name": "joint_vel",
+        #         "weight": -0.004,
+        #         "num_steps": 8_000 * 24,
+        #     },
+        # )
+        # self.curriculum.joint_vel_s3 = CurrTerm(
+        #     func=mdp.modify_reward_weight,
+        #     params={
+        #         "term_name": "joint_vel",
+        #         "weight": -0.008,
+        #         "num_steps": 12_000 * 24,
+        #     },
+        # )
 
         # arm is controlled using position control, in normalized ranges [-100, 100].
         # matches lerobot.
@@ -212,14 +212,27 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
             },
         )
 
-        # PD gain domain randomization, in the range [50%, 150%] of the nominal value.
+        # PD gain domain randomization, in the range [50%, 150%] of the nominal value
+        # for damping and [75%, 125%] of the nominal value for stiffness.
         self.events.randomize_gains = EventTerm(
             func=mdp.randomize_actuator_gains,
             mode="reset",
             params={
                 "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-                "stiffness_distribution_params": (0.5, 1.5),
+                "stiffness_distribution_params": (0.75, 1.25),
                 "damping_distribution_params": (0.5, 1.5),
+                "operation": "scale",
+                "distribution": "uniform",
+            },
+        )
+
+        # joint friction domain randomization.
+        self.events.randomize_joint_friction = EventTerm(
+            func=mdp.randomize_joint_parameters,
+            mode="startup",
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+                "friction_distribution_params": (0.7, 1.3),
                 "operation": "scale",
                 "distribution": "uniform",
             },
@@ -247,6 +260,7 @@ class SoArm101ReachNormalizedEnvCfg_PLAY(SoArm101ReachNormalizedEnvCfg):
         self.observations.policy.enable_corruption = False
         # disable sim2real domain randomization so play runs under nominal
         self.events.randomize_gains = None
+        self.events.randomize_joint_friction = None
         self.events.randomize_action_delay = EventTerm(
             func=mdp.randomize_action_delay,
             mode="reset",
@@ -273,7 +287,8 @@ class SoArm101ReachNormalizedPlayNoiseEnvCfg(SoArm101ReachNormalizedEnvCfg_PLAY)
 
 @configclass
 class SoArm101ReachNormalizedPlayGainsEnvCfg(SoArm101ReachNormalizedEnvCfg_PLAY):
-    # PLAY + training PD-gain randomization (stiffness/damping scaled [0.5, 1.5]) only.
+    # PLAY + training PD-gain randomization (stiffness [0.75, 1.25], damping
+    # [0.5, 1.5]) only.
     def __post_init__(self):
         super().__post_init__()
         self.events.randomize_gains = EventTerm(
@@ -281,7 +296,7 @@ class SoArm101ReachNormalizedPlayGainsEnvCfg(SoArm101ReachNormalizedEnvCfg_PLAY)
             mode="reset",
             params={
                 "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
-                "stiffness_distribution_params": (0.5, 1.5),
+                "stiffness_distribution_params": (0.75, 1.25),
                 "damping_distribution_params": (0.5, 1.5),
                 "operation": "scale",
                 "distribution": "uniform",
@@ -359,8 +374,10 @@ class SoArm101ReachNormalizedNewtonEnvCfg(SoArm101ReachNormalizedEnvCfg):
         super().__post_init__()
         # force the Newton MJWarp backend, reusing the parent preset's tuned cfg
         self.sim.physics = ReachPhysicsCfg().newton_mjwarp
-        self.sim.physics.num_substeps = 4
+        self.sim.physics.num_substeps = 2
         self.sim.physics.solver_cfg.njmax = 200
+        self.sim.physics.collision_decimation = 4
+        self.sim.physics.solver_cfg.integrator = "implicitfast"
 
 
 @configclass
