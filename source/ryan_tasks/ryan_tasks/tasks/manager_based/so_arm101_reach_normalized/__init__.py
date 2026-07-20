@@ -13,6 +13,9 @@ gym.register(
     kwargs={
         "env_cfg_entry_point": f"{__name__}.joint_pos_normalized_env_cfg:SoArm101ReachNormalizedEnvCfg",
         "rsl_rl_cfg_entry_point": f"{__name__}.agents.rsl_rl_ppo_cfg:ReachPPORunnerCfg",
+        "rl_games_cfg_entry_point": f"{__name__}.agents:rl_games_ppo_cfg.yaml",
+        "skrl_cfg_entry_point": f"{__name__}.agents:skrl_ppo_cfg.yaml",
+        "sb3_cfg_entry_point": f"{__name__}.agents:sb3_ppo_cfg.yaml",
     },
 )
 
