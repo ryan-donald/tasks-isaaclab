@@ -6,3 +6,4 @@
 import gymnasium as gym  # noqa: F401
 
 from . import so_arm101_lift_normalized  # noqa: F401
+from . import franka_lift_limit_scaled  # noqa: F401

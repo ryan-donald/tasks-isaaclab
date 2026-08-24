@@ -32,7 +32,7 @@ from isaaclab.managers import (
 from isaaclab.utils.configclass import configclass
 from isaaclab.utils.noise import NoiseModelWithAdditiveBiasCfg
 from isaaclab.utils.noise import UniformNoiseCfg as Unoise
-from isaaclab_tasks.core.reach.reach_env_cfg import ReachEnvCfg, ReachPhysicsCfg
+from isaaclab_tasks.manager_based.manipulation.reach.reach_env_cfg import ReachEnvCfg, ReachPhysicsCfg
 
 from ryan_tasks.tasks.robots.so_arm101_urdf_cfg import SO_ARM101_URDF_CFG
 
@@ -92,9 +92,23 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         self.sim.render_interval = self.decimation
         self.episode_length_s = 12.0
 
+        # LINEAR-HEAD SAFETY: the tanh policy head structurally bounded commands to
+        # the joint range, so the smoothness penalties could be tiny and curriculum-
+        # delayed. a linear head has no such bound, so it needs action-rate, velocity
+        # and magnitude pressure from step 0 or it learns a saturating, non-settling
+        # policy. make the smoothness terms active from the start and add an explicit
+        # action-magnitude penalty (the direct replacement for the tanh bound, which
+        # penalizes commanding position targets far from the default pose).
+        self.rewards.action_rate.weight = -0.001
+        self.rewards.joint_vel.weight = -0.001
+        self.rewards.action_l2 = RewTerm(func=mdp.action_l2, weight=-0.005)
+
         # curriculum terms that allow the robot to first learn how to reach the goal,
-        # then progressively learn smoother and slower motions to reach it.
-        self.curriculum.action_rate.params["num_steps"] = 4_000 * 24
+        # then progressively learn smoother and slower motions to reach it. these pin
+        # action_rate / joint_vel at -0.001 (suppressing the base -0.005@4500 ramp);
+        # now redundant with the from-start weights above but kept so that base ramp
+        # cannot silently re-activate.
+        self.curriculum.action_rate.params["num_steps"] = 5_000 * 24
         self.curriculum.action_rate.params["weight"] = -0.001
         # self.curriculum.action_rate_s2 = CurrTerm(
         #     func=mdp.modify_reward_weight,
@@ -113,7 +127,7 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         #     },
         # )
 
-        self.curriculum.joint_vel.params["num_steps"] = 4_000 * 24
+        self.curriculum.joint_vel.params["num_steps"] = 5_000 * 24
         self.curriculum.joint_vel.params["weight"] = -0.001
         # self.curriculum.joint_vel_s2 = CurrTerm(
         #     func=mdp.modify_reward_weight,
@@ -131,6 +145,8 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         #         "num_steps": 12_000 * 24,
         #     },
         # )
+
+        # self.curriculum=None
 
         # arm is controlled using position control, in normalized ranges [-100, 100].
         # matches lerobot.
@@ -255,7 +271,7 @@ class SoArm101ReachNormalizedEnvCfg_PLAY(SoArm101ReachNormalizedEnvCfg):
         # post init of parent
         super().__post_init__()
         self.scene.num_envs = 50
-        self.scene.env_spacing = 2.5
+        self.scene.env_spacing = 1.0
         # disable randomization for play
         self.observations.policy.enable_corruption = False
         # disable sim2real domain randomization so play runs under nominal
@@ -269,6 +285,10 @@ class SoArm101ReachNormalizedEnvCfg_PLAY(SoArm101ReachNormalizedEnvCfg):
 
         self.observations.policy.joint_pos.noise = Unoise(n_min=-0.0, n_max=0.0)
 
+        # shrink the goal/current pose frame markers (default is 0.1)
+        marker_scale = (0.04, 0.04, 0.04)
+        self.commands.ee_pose.goal_pose_visualizer_cfg.markers["frame"].scale = marker_scale
+        self.commands.ee_pose.current_pose_visualizer_cfg.markers["frame"].scale = marker_scale
 
 # domain-randomization isolation configs. each is the clean PLAY config (nominal
 # gains, no obs noise, fixed delay) with exactly ONE training-time randomization
@@ -365,6 +385,10 @@ class SoArm101ReachNormalizedFinetuneEnvCfg(SoArm101ReachNormalizedEnvCfg):
             },
         )
 
+
+        self.rewards.joint_vel.weight = -0.005
+        self.curriculum.joint_vel.params["weight"] = -0.001
+        self.rewards.curriculum=None
 
 @configclass
 class SoArm101ReachNormalizedNewtonEnvCfg(SoArm101ReachNormalizedEnvCfg):
