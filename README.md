@@ -1,6 +1,9 @@
+[![Isaac Lab](https://img.shields.io/badge/Isaac_Lab-v3.0.0--EA-76B900?logo=nvidia&logoColor=white)](https://github.com/isaac-sim/IsaacLab/tree/v3.0.0-EA)
+[![Robot](https://img.shields.io/badge/Robot-SO--ARM101-1f6feb?logo=github&logoColor=white)](https://github.com/TheRobotStudio/SO-ARM100)
+
 ## IsaacLab Custom Tasks
 
-Currently, the only task within this package is my 'Ryan-Reach-SO-ARM101-Normalized-v0'. This is a task with the SO-ARM101 with the goal of controlling the arm end-effector tip to a desired position in a three dimensional workspace. I have used this task to perform sim2real transfer from IsaacLab to a real-world SO-ARM101 robot. 
+This is my repository containing my custom tasks for Isaac Lab. Currently, mainly reach tasks with the SO-ARM101, an opensource robot arm. I use these tasks to train policies within the Isaac Lab framework, and then deploy them onto the real robot for my own personal research  (and fun).
 
 # Installation
 
