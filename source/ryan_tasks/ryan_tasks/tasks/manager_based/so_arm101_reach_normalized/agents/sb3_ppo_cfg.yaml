@@ -1,0 +1,27 @@
+# Hyperparameters matched to ryan_ppo's cfg for this task
+# (cfg/Ryan-Reach-SO-ARM101-Normalized-v0.ini + cfg/defaults.ini).
+
+seed: 42
+
+n_timesteps: !!float 3e7
+policy: 'MlpPolicy'
+n_steps: 24
+# 24 steps * 12288 envs / 16 minibatches
+batch_size: 18432
+gae_lambda: 0.95
+gamma: 0.99
+n_epochs: 5
+ent_coef: 1.0e-4
+learning_rate: !!float 1e-3
+clip_range: !!float 0.2
+policy_kwargs:
+  activation_fn: 'nn.ELU'
+  net_arch: [64, 64]
+  squash_output: False
+  log_std_init: -0.6931  # ln(0.5), matching ryan_ppo's init std of 0.5
+vf_coef: 1.0
+max_grad_norm: 1.0
+device: "cuda:0"
+normalize_input: True
+normalize_value: False
+clip_obs: 100.0

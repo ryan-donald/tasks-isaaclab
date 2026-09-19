@@ -1,4 +1,4 @@
-# Copyright (c) 2025-2026, Ryan Donald
+# Copyright (c) 2024-2026, Ryan Donald
 # All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
@@ -18,41 +18,24 @@ if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLEnv
 
 
-def position_settle_reward(
+def action_rate_l2_near_goal(
     env: ManagerBasedRLEnv,
-    std: float,
-    vel_std: float,
     command_name: str,
     asset_cfg: SceneEntityCfg,
+    radius: float,
 ) -> torch.Tensor:
-    """Reward that is high only when the EE is close to the goal AND the arm is slow.
+    """Squared action change, applied only while the end effector is within radius of the goal.
 
-    Multiplicative "close AND slow": the position tanh kernel ``(1 - tanh(d/std))``
-    times a joint-speed tanh kernel ``(1 - tanh(speed/vel_std))``. Because the
-    product collapses whenever the arm is moving, oscillating through the target
-    earns almost nothing -- so this rewards stopping at the goal rather than hunting
-    around it. That hunting is the failure mode of the tight position-tracking term
-    under the action delay: best error improves (the policy reaches the target) but
-    it cannot hold, which inflates the settled error.
-
-    ``asset_cfg`` must resolve both the EE body (``body_names``) and the arm joints
-    (``joint_names``) whose speed defines "slow".
+    stepped smoothness penalty: leaves the approach fast and only enforces settling at the goal.
     """
     asset: Articulation = env.scene[asset_cfg.name]
-
-    # EE distance to the commanded position, in the world frame (same as
-    # position_command_error).
     command = env.command_manager.get_command(command_name)
-    des_pos_b = command[:, :3]
     des_pos_w, _ = combine_frame_transforms(
-        asset.data.root_pos_w.torch, asset.data.root_quat_w.torch, des_pos_b
+        asset.data.root_pos_w.torch, asset.data.root_quat_w.torch, command[:, :3]
     )
     curr_pos_w = asset.data.body_pos_w.torch[:, asset_cfg.body_ids[0]]
     distance = torch.linalg.norm(curr_pos_w - des_pos_w, dim=1)
-    near = 1.0 - torch.tanh(distance / std)
-
-    # arm joint speed; the kernel is ~1 only when the arm is nearly still.
-    speed = torch.linalg.norm(asset.data.joint_vel.torch[:, asset_cfg.joint_ids], dim=1)
-    slow = 1.0 - torch.tanh(speed / vel_std)
-
-    return near * slow
+    rate = torch.sum(
+        torch.square(env.action_manager.action - env.action_manager.prev_action), dim=1
+    )
+    return rate * (distance < radius).float()

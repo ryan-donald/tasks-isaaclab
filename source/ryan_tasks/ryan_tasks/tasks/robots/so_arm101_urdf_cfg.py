@@ -1,3 +1,8 @@
+# Copyright (c) 2024-2026, Ryan Donald
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 import copy
 from pathlib import Path
 
@@ -7,9 +12,7 @@ from isaaclab.assets.articulation import ArticulationCfg
 
 URDF_ASSETS_DATA_DIR = Path(__file__).resolve().parent
 
-##
-# Configuration - URDF Version
-##
+# urdf version.
 
 SO_ARM101_URDF_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
@@ -52,19 +55,19 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
         "arm": ImplicitActuatorCfg(
             joint_names_expr=["shoulder_.*", "elbow_flex", "wrist_.*"],
             effort_limit_sim=1.9,
-            velocity_limit_sim=5.5,
-            armature=0.03,
+            velocity_limit_sim=4.99,
+            armature=0.0045,
             stiffness={
                 # "shoulder_pan": 400.0,
                 # "shoulder_lift": 400.0,
                 # "elbow_flex": 400.0,
                 # "wrist_flex": 400.0,
                 # "wrist_roll": 600.0,
-                "shoulder_pan": 17.8,
-                "shoulder_lift": 17.8,
-                "elbow_flex": 17.8,
-                "wrist_flex": 17.8,
-                "wrist_roll": 17.8,
+                "shoulder_pan": 35.6,
+                "shoulder_lift": 35.6,
+                "elbow_flex": 35.6,
+                "wrist_flex": 35.6,
+                "wrist_roll": 35.6,
             },
             # damping={
             #     "shoulder_pan": 40.0,
@@ -74,11 +77,11 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
             #     "wrist_roll": 40.0,
             # },
             damping={
-                "shoulder_pan": 1.5,
-                "shoulder_lift": 1.5,
-                "elbow_flex": 1.5,
-                "wrist_flex": 1.5,
-                "wrist_roll": 1.5,
+                "shoulder_pan": 2.25,
+                "shoulder_lift": 2.25,
+                "elbow_flex": 2.25,
+                "wrist_flex": 2.25,
+                "wrist_roll": 2.25,
             },
             # friction={
             #     "shoulder_pan": 0.005,
@@ -110,9 +113,7 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
 )
 
 
-##
-# Configuration - Parallel-gripper URDF
-##
+# parallel-gripper urdf.
 
 # Same calibrated arm as SO_ARM101_URDF_CFG, but with a new parallel gripper.
 #   right_clamp = 0.000 m -> jaws closed (~13 mm gap)
