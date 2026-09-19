@@ -18,7 +18,6 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
         fix_base=True,
         merge_fixed_joints=False,
-        replace_cylinders_with_capsules=True,
         asset_path=f"{URDF_ASSETS_DATA_DIR}/so101_new_calib.urdf",
         activate_contact_sensors=False,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(

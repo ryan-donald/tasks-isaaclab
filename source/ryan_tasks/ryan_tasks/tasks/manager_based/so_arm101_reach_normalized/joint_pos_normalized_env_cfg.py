@@ -29,7 +29,7 @@ from isaaclab.managers import (
 from isaaclab.utils.configclass import configclass
 from isaaclab.utils.noise import NoiseModelWithAdditiveBiasCfg
 from isaaclab.utils.noise import UniformNoiseCfg as Unoise
-from isaaclab_tasks.manager_based.manipulation.reach.reach_env_cfg import (
+from isaaclab_tasks.core.reach.reach_env_cfg import (
     ReachEnvCfg,
     ReachPhysicsCfg,
 )
@@ -82,9 +82,19 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         self.rewards.end_effector_position_tracking.params["asset_cfg"].body_names = [
             "gripper_frame_link"
         ]
-        self.rewards.end_effector_position_tracking_fine_grained.params[
-            "asset_cfg"
-        ].body_names = ["gripper_frame_link"]
+        # isaaclab 3.0-EA dropped this term from the base reach cfg, so define it here
+        # with the weight/std the task was tuned on.
+        self.rewards.end_effector_position_tracking_fine_grained = RewTerm(
+            func=mdp.position_command_error_tanh,
+            weight=0.1,
+            params={
+                "asset_cfg": SceneEntityCfg(
+                    "robot", body_names=["gripper_frame_link"]
+                ),
+                "std": 0.1,
+                "command_name": "ee_pose",
+            },
+        )
         self.rewards.end_effector_orientation_tracking.params[
             "asset_cfg"
         ].body_names = ["gripper_frame_link"]
@@ -123,6 +133,13 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         self.rewards.action_rate.weight = -0.001
         self.rewards.joint_vel.weight = -0.001
         self.rewards.action_l2 = RewTerm(func=mdp.action_l2, weight=0.0)
+
+        # isaaclab 3.0-EA added these to the base reach cfg; drop them to keep the
+        # tuned mdp. action_magnitude duplicates action_l2 above, and the success
+        # bonus/termination would end episodes early.
+        self.rewards.action_magnitude = None
+        self.rewards.success = None
+        self.terminations.success = None
 
         # stepped smoothness: a strong action-rate penalty only within 5 cm of the goal,
         # so the approach stays fast while settling at the goal is enforced.

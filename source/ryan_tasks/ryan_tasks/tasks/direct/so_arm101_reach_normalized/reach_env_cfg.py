@@ -20,7 +20,7 @@ from isaaclab.sim import SimulationCfg
 from isaaclab.utils.configclass import configclass
 from isaaclab.utils.noise import NoiseModelWithAdditiveBiasCfg
 from isaaclab.utils.noise import UniformNoiseCfg as Unoise
-from isaaclab_tasks.manager_based.manipulation.reach.reach_env_cfg import (
+from isaaclab_tasks.core.reach.reach_env_cfg import (
     ReachPhysicsCfg,
     ReachSceneCfg,
 )
