@@ -12,6 +12,8 @@ Every task runs on Isaac Sim PhysX by default. Add `physics=newton_mjwarp` to th
 | Family | Task IDs |
 |---|---|
 | Reach | `Ryan-Reach-SO-ARM101-Normalized-v0` (and `-Play`), `-Settle` (bonus for holding still at the goal), `-Matched` (library-neutral agent configs for benchmarking), `-Direct` (direct-workflow port, same MDP) |
+| Lift | `Ryan-Lift-Cube-SO-ARM101-Normalized-Settle-v0` (and `-Settle-Play`): lift to a goal with a bonus for holding still there; `Ryan-Lift-Cube-SO-ARM101-Normalized-v0` (and `-Play`): the base lift |
+| Push | `Ryan-Push-Cube-SO-ARM101-Normalized-v0`, `Ryan-Push-T-SO-ARM101-Normalized-v0` (each with `-Play`) |
 
 # Layout
 
@@ -20,7 +22,7 @@ The package follows the Isaac Lab 3.0 external-project template:
 ```
 src/ryan_tasks/
   robots/            the SO-ARM101 config and its asset files in data/
-  mdp/               the servo and encoder model shared by the tasks
+  mdp/               the servo and encoder model shared by reach, lift and push
   tasks/<family>/    one folder per task family: mdp/, a base cfg where there is one,
                      and config/so_arm101/ with the task cfgs, registrations and
                      agent configs

@@ -13,6 +13,8 @@
 **/*.usda
 **/*.usdc
 **/*.usdz
+# except the hand-written Push-T block
+!src/ryan_tasks/tasks/push/config/so_arm101/assets/*.usda
 
 # Python
 .DS_Store

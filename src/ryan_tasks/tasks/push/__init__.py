@@ -1,0 +1,6 @@
+# Copyright (c) 2024-2026, Ryan Donald
+# All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""Planar pushing: a cube to a position, and a T block to a pose."""
