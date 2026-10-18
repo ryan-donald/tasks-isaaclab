@@ -108,7 +108,7 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         # goal workspace.
         self.commands.ee_pose.ranges.pos_x = (0.1, 0.25)
         self.commands.ee_pose.ranges.pos_y = (-0.2, 0.2)
-        self.commands.ee_pose.ranges.pos_z = (0.1, 0.4)
+        self.commands.ee_pose.ranges.pos_z = (0.02, 0.4)
 
         self.commands.ee_pose.ranges.pitch = (math.pi, math.pi)
 
@@ -323,3 +323,9 @@ class SoArm101ReachNormalizedSettleEnvCfg(SoArm101ReachNormalizedEnvCfg):
                 "rate_scale": 0.03,
             },
         )
+
+        # the dt-scaled rewards are ~0.002 per step, far below a freshly initialized
+        # critic's output, whose random values then pick the arm posture early on.
+        for term in vars(self.rewards).values():
+            if term is not None:
+                term.weight *= 100.0

@@ -114,7 +114,7 @@ class SoArm101ReachDirectEnvCfg(DirectRLEnvCfg):
         ranges=UniformPoseCommandCfg.Ranges(
             pos_x=(0.1, 0.25),
             pos_y=(-0.2, 0.2),
-            pos_z=(0.1, 0.4),
+            pos_z=(0.02, 0.4),
             roll=(0.0, 0.0),
             pitch=(math.pi, math.pi),
             yaw=(-3.14, 3.14),
