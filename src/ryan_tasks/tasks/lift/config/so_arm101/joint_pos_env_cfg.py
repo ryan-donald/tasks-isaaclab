@@ -616,8 +616,7 @@ class SoArm101LiftNormalizedSettleEnvCfg(SoArm101LiftNormalizedEnvCfg):
         self.rewards.action_l2 = None
         self.rewards.action_past_limits = None
         self.rewards.arm_command_rate = None
-        # action_rate and joint_vel stay at -0.001; only the table-contact phase-in
-        # is kept.
+        self.rewards.action_rate.weight = -1.0
         self.curriculum = TableContactCurriculumCfg()
 
         self.commands.object_pose.class_type = mdp.HoldAwarePoseCommand
@@ -626,14 +625,14 @@ class SoArm101LiftNormalizedSettleEnvCfg(SoArm101LiftNormalizedEnvCfg):
             mode="reset",
             params={"fraction": self.hold_fraction},
         )
-        # 1.5 cm goal kernel; 3 normalized units (0.03 action units) of command
+        # 1.5 cm goal kernel; 10 normalized units (0.1 action units) of command
         # change per step.
         self.rewards.settled_at_goal = RewTerm(
             func=mdp.settled_at_goal,
             weight=6.0,
             params={
                 "goal_std": 0.015,
-                "rate_scale": 0.03,
+                "rate_scale": 0.1,
                 "minimal_height": 0.04,
                 "command_name": "object_pose",
             },
