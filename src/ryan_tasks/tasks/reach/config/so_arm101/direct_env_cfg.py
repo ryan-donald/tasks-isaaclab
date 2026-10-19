@@ -98,7 +98,7 @@ class SoArm101ReachDirectEnvCfg(DirectRLEnvCfg):
     sim: SimulationCfg = SimulationCfg(dt=1.0 / 60.0, render_interval=1)
 
     # scene
-    scene: ReachSceneCfg = ReachSceneCfg(num_envs=4096, env_spacing=2.5)
+    scene: ReachSceneCfg = ReachSceneCfg(num_envs=8192, env_spacing=2.5)
 
     # events
     events: EventCfg = EventCfg()
@@ -150,6 +150,10 @@ class SoArm101ReachDirectEnvCfg(DirectRLEnvCfg):
     rew_action_l2 = 0.0
     rew_action_rate_near = -0.15
     near_goal_radius = 0.05
+    rew_settled_at_goal = 0.1
+    settled_goal_std = 0.01
+    settled_rate_scale = 0.03
+    reward_scale = 100.0
 
     def __post_init__(self):
         self.sim.physics = reach_physics()

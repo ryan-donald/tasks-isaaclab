@@ -156,11 +156,12 @@ class SoArm101ReachDirectEnv(DirectRLEnv):
         self.reward_manager = RewardTermLog(
             [
                 "end_effector_position_tracking",
-                "end_effector_position_tracking_fine_grained",
                 "action_rate",
                 "joint_vel",
+                "end_effector_position_tracking_fine_grained",
                 "action_l2",
                 "action_rate_near",
+                "settled_at_goal",
             ],
             num_envs,
             device,
@@ -313,18 +314,24 @@ class SoArm101ReachDirectEnv(DirectRLEnv):
         curr_pos_w = data.body_pos_w.torch[:, self._ee_body_id]
         distance = torch.linalg.norm(curr_pos_w - des_pos_w, dim=1)
         action_rate = torch.sum(torch.square(self._action - self._prev_action), dim=1)
+        action_change = torch.linalg.norm(self._action - self._prev_action, dim=1)
         near_goal = (distance < cfg.near_goal_radius).float()
 
         terms = (
             (cfg.rew_position_tracking, distance),
+            (cfg.rew_action_rate, action_rate),
+            (cfg.rew_joint_vel, torch.sum(torch.square(data.joint_vel.torch), dim=1)),
             (
                 cfg.rew_position_tracking_fine_grained,
                 1 - torch.tanh(distance / cfg.fine_grained_std),
             ),
-            (cfg.rew_action_rate, action_rate),
-            (cfg.rew_joint_vel, torch.sum(torch.square(data.joint_vel.torch), dim=1)),
             (cfg.rew_action_l2, torch.sum(torch.square(self._action), dim=1)),
             (cfg.rew_action_rate_near, action_rate * near_goal),
+            (
+                cfg.rew_settled_at_goal,
+                (1.0 - torch.tanh(distance / cfg.settled_goal_std))
+                * (1.0 - torch.tanh(action_change / cfg.settled_rate_scale)),
+            ),
         )
 
         # RewardManager.compute's accumulation, which scales each term by dt.
@@ -334,7 +341,7 @@ class SoArm101ReachDirectEnv(DirectRLEnv):
             if weight == 0.0:
                 step_reward[:, idx] = 0.0
                 continue
-            value = term * weight * self.step_dt
+            value = term * (weight * cfg.reward_scale) * self.step_dt
             self._reward_buf += value
             step_reward[:, idx] = value / self.step_dt
 

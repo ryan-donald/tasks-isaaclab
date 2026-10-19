@@ -45,16 +45,6 @@ gym.register(
     },
 )
 
-gym.register(
-    id="Ryan-Reach-SO-ARM101-Normalized-Settle-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
-    disable_env_checker=True,
-    kwargs={
-        "env_cfg_entry_point": f"{ENV_CFG}:SoArm101ReachNormalizedSettleEnvCfg",
-        "rsl_rl_cfg_entry_point": RSL_RL_CFG,
-    },
-)
-
 # direct-workflow port of the manager-based task (same MDP, bit-for-bit).
 DIRECT_KWARGS = {
     "rsl_rl_cfg_entry_point": RSL_RL_CFG,

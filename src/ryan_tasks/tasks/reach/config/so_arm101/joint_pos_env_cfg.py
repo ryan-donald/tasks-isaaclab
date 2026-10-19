@@ -74,6 +74,7 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
 
     def __post_init__(self):
         super().__post_init__()
+        self.scene.num_envs = 8192
 
         # arm joint friction is off: PhysX joint friction keeps the arm from settling.
         self.scene.robot = SO_ARM101_URDF_CFG.replace(
@@ -146,6 +147,19 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
                 "command_name": "ee_pose",
                 "radius": 0.05,
                 "asset_cfg": SceneEntityCfg("robot", body_names=["gripper_frame_link"]),
+            },
+        )
+
+        # bonus for holding a still arm command at the goal: 1 cm goal kernel; 3
+        # normalized units (0.03 action units) of command change per step.
+        self.rewards.settled_at_goal = RewTerm(
+            func=mdp.settled_at_goal,
+            weight=0.1,
+            params={
+                "command_name": "ee_pose",
+                "asset_cfg": SceneEntityCfg("robot", body_names=["gripper_frame_link"]),
+                "goal_std": 0.01,
+                "rate_scale": 0.03,
             },
         )
 
@@ -270,6 +284,10 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
             params={"action_name": "arm_action", "min_delay": 1, "max_delay": 3},
         )
 
+        for term in vars(self.rewards).values():
+            if term is not None:
+                term.weight *= 100.0
+
 
 @configclass
 class SoArm101ReachNormalizedEnvCfg_PLAY(SoArm101ReachNormalizedEnvCfg):
@@ -303,29 +321,3 @@ class SoArm101ReachNormalizedEnvCfg_PLAY(SoArm101ReachNormalizedEnvCfg):
         self.commands.ee_pose.current_pose_visualizer_cfg.markers[
             "frame"
         ].scale = marker_scale
-
-
-@configclass
-class SoArm101ReachNormalizedSettleEnvCfg(SoArm101ReachNormalizedEnvCfg):
-    """Reach with a bonus for holding a still arm command at the goal."""
-
-    def __post_init__(self):
-        super().__post_init__()
-        # 1 cm goal kernel; 3 normalized units (0.03 action units) of command change
-        # per step.
-        self.rewards.settled_at_goal = RewTerm(
-            func=mdp.settled_at_goal,
-            weight=0.1,
-            params={
-                "command_name": "ee_pose",
-                "asset_cfg": SceneEntityCfg("robot", body_names=["gripper_frame_link"]),
-                "goal_std": 0.01,
-                "rate_scale": 0.03,
-            },
-        )
-
-        # the dt-scaled rewards are ~0.002 per step, far below a freshly initialized
-        # critic's output, whose random values then pick the arm posture early on.
-        for term in vars(self.rewards).values():
-            if term is not None:
-                term.weight *= 100.0
