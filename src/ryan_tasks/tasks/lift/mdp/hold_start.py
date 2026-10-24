@@ -61,7 +61,7 @@ class HoldAwarePoseCommand(ObjectUniformPoseCommand):
 
 def hold_start_reset(
     env: ManagerBasedRLEnv,
-    env_ids: torch.Tensor,
+    env_ids: torch.Tensor | slice,
     fraction: float,
     bank_path: str = HOLD_BANK_PATH,
 ):
@@ -82,6 +82,8 @@ def hold_start_reset(
         )
         env._hold_raw = torch.zeros(env.num_envs, 5, device=env.device)
     bank = env._hold_bank
+    if isinstance(env_ids, slice):
+        env_ids = torch.arange(env.num_envs, device=env.device)[env_ids]
     env_ids = torch.as_tensor(env_ids, device=env.device)
     sel = env_ids[torch.rand(len(env_ids), device=env.device) < fraction]
     if len(sel) == 0:
@@ -92,7 +94,7 @@ def hold_start_reset(
     q = bank["joint_pos"][idx]
     robot.write_joint_position_to_sim_index(position=q, env_ids=sel)
     robot.write_joint_velocity_to_sim_index(velocity=torch.zeros_like(q), env_ids=sel)
-    robot.set_joint_position_target(q, env_ids=sel)
+    robot.actuators.target_command.set_position_index(value=q, env_ids=sel)
 
     root_p, root_q = robot.data.root_pos_w.torch[sel], robot.data.root_quat_w.torch[sel]
     pos_w = root_p + quat_apply(root_q, bank["cube_pos_b"][idx])

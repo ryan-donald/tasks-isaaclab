@@ -19,7 +19,7 @@ from ryan_tasks.tasks.lift import mdp
 class LiftEnvCfg(CoreLiftEnvCfg):
     """Manager-based cube lift base.
 
-    Isaac Lab 3.0-EA's ``core.lift.LiftEnvCfg`` is a reorient task. This removes its
+    Isaac Lab 3.0's ``core.lift.LiftEnvCfg`` is a reorient task. This removes its
     reorient-specific rewards, randomization, observations and terminations and adds
     the lift reward slots, resets, termination and goal resampling the lift tasks use.
     """

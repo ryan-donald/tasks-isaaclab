@@ -31,7 +31,7 @@ def action_rate_l2_near_goal(
     des_pos_w, _ = combine_frame_transforms(
         asset.data.root_pos_w.torch, asset.data.root_quat_w.torch, command[:, :3]
     )
-    curr_pos_w = asset.data.body_pos_w.torch[:, asset_cfg.body_ids[0]]
+    curr_pos_w = asset.data.body_pos_w.torch[:, asset_cfg.body_ids][:, 0]
     distance = torch.linalg.norm(curr_pos_w - des_pos_w, dim=1)
     rate = torch.sum(
         torch.square(env.action_manager.action - env.action_manager.prev_action), dim=1
@@ -59,7 +59,7 @@ def settled_at_goal(
     des_pos_w, _ = combine_frame_transforms(
         asset.data.root_pos_w.torch, asset.data.root_quat_w.torch, command[:, :3]
     )
-    curr_pos_w = asset.data.body_pos_w.torch[:, asset_cfg.body_ids[0]]
+    curr_pos_w = asset.data.body_pos_w.torch[:, asset_cfg.body_ids][:, 0]
     distance = torch.linalg.norm(curr_pos_w - des_pos_w, dim=1)
     rate = torch.linalg.norm(
         env.action_manager.action - env.action_manager.prev_action, dim=1

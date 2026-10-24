@@ -1,5 +1,5 @@
 # Hyperparameters matched to ryan_ppo's cfg for this task
-# (cfg/Ryan-Reach-SO-ARM101-Normalized-v0.ini + cfg/defaults.ini).
+# (cfg/Ryan-Reach-SO-ARM101-Normalized.ini + cfg/defaults.ini).
 
 params:
   seed: 42

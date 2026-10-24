@@ -32,7 +32,7 @@ from isaaclab.managers import (
     SceneEntityCfg,
 )
 from isaaclab.sensors import ContactSensorCfg
-from isaaclab.sim.schemas.schemas_cfg import MassPropertiesCfg, RigidBodyPropertiesCfg
+from isaaclab.sim.schemas import MassCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.sim.spawners.materials.physics_materials_cfg import RigidBodyMaterialCfg
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
@@ -41,6 +41,7 @@ from isaaclab.utils.noise import NoiseModelWithAdditiveBiasCfg
 from isaaclab.utils.noise import UniformNoiseCfg as Unoise
 from isaaclab_newton.physics import MJWarpSolverCfg, NewtonCfg
 from isaaclab_physx.physics import PhysxCfg
+from isaaclab_physx.sim.schemas import PhysxRigidBodyCfg
 from isaaclab_tasks.utils import PresetCfg
 
 from ryan_tasks.robots.so_arm101 import (
@@ -185,6 +186,7 @@ class SoArm101LiftNormalizedEnvCfg(LiftEnvCfg):
 
         # no table: the ground plane at z=0 is the support surface.
         self.scene.table = None
+        self.scene.table_material = None
         self.scene.plane.init_state.pos = (0.0, 0.0, 0.0)
 
         # default pose: a top-down pre-grasp hover 13 cm above the spawn centre, with
@@ -257,8 +259,8 @@ class SoArm101LiftNormalizedEnvCfg(LiftEnvCfg):
             spawn=UsdFileCfg(
                 usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
                 scale=(0.5, 0.5, 0.5),
-                mass_props=MassPropertiesCfg(mass=0.07),
-                rigid_props=RigidBodyPropertiesCfg(
+                mass_props=MassCfg(mass=0.07),
+                rigid_props=PhysxRigidBodyCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
                     max_angular_velocity=1000.0,

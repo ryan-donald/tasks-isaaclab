@@ -9,7 +9,7 @@ RSL_RL_CFG = f"{AGENTS}.rsl_rl_ppo_cfg:PushCubePPORunnerCfg"
 # physics=newton_mjwarp for Newton (MJWarp).
 
 gym.register(
-    id="Ryan-Push-Cube-SO-ARM101-Normalized-v0",
+    id="Ryan-Push-Cube-SO-ARM101-Normalized",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -19,7 +19,7 @@ gym.register(
 )
 
 gym.register(
-    id="Ryan-Push-Cube-SO-ARM101-Normalized-Play-v0",
+    id="Ryan-Push-Cube-SO-ARM101-Normalized-Play",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -36,7 +36,7 @@ for suffix, cfg in (
     ("-Play", "SoArm101PushTNormalizedEnvCfg_PLAY"),
 ):
     gym.register(
-        id=f"Ryan-Push-T-SO-ARM101-Normalized{suffix}-v0",
+        id=f"Ryan-Push-T-SO-ARM101-Normalized{suffix}",
         entry_point="isaaclab.envs:ManagerBasedRLEnv",
         disable_env_checker=True,
         kwargs={

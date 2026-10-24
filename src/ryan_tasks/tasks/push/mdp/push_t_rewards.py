@@ -144,14 +144,14 @@ def tip_speed_near_object_penalty(
     """
     robot = env.scene[ee_cfg.name]
     obj: RigidObject = env.scene[object_cfg.name]
-    bid = ee_cfg.body_ids[0]
-    pos = robot.data.body_pos_w.torch[:, bid, :]
+    bid = ee_cfg.body_ids
+    pos = robot.data.body_pos_w.torch[:, bid][:, 0]
     # quaternion (x, y, z, w).
-    quat = robot.data.body_quat_w.torch[:, bid, :]
+    quat = robot.data.body_quat_w.torch[:, bid][:, 0]
     r = quat_apply(quat, pos.new_tensor(ee_offset).expand_as(pos))
     tip = pos + r
-    tip_vel = robot.data.body_lin_vel_w.torch[:, bid, :] + torch.cross(
-        robot.data.body_ang_vel_w.torch[:, bid, :], r, dim=-1
+    tip_vel = robot.data.body_lin_vel_w.torch[:, bid][:, 0] + torch.cross(
+        robot.data.body_ang_vel_w.torch[:, bid][:, 0], r, dim=-1
     )
 
     # tip distance to the T, in the T's frame, via the box signed-distance function.

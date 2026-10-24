@@ -8,7 +8,7 @@ RSL_RL_CFG = f"{AGENTS}.rsl_rl_ppo_cfg:ReachPPORunnerCfg"
 # physics=newton_mjwarp for Newton (MJWarp).
 
 gym.register(
-    id="Ryan-Reach-SO-ARM101-Normalized-v0",
+    id="Ryan-Reach-SO-ARM101-Normalized",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -23,7 +23,7 @@ gym.register(
 # same env, library-neutral agent configs (4 minibatches, entropy 0.01) for the
 # cross-framework benchmark.
 gym.register(
-    id="Ryan-Reach-SO-ARM101-Normalized-Matched-v0",
+    id="Ryan-Reach-SO-ARM101-Normalized-Matched",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -36,7 +36,7 @@ gym.register(
 )
 
 gym.register(
-    id="Ryan-Reach-SO-ARM101-Normalized-Play-v0",
+    id="Ryan-Reach-SO-ARM101-Normalized-Play",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -53,7 +53,7 @@ DIRECT_KWARGS = {
     "sb3_cfg_entry_point": f"{AGENTS}:sb3_ppo_cfg.yaml",
 }
 gym.register(
-    id="Ryan-Reach-SO-ARM101-Normalized-Direct-v0",
+    id="Ryan-Reach-SO-ARM101-Normalized-Direct",
     entry_point=f"{__name__}.direct_env:SoArm101ReachDirectEnv",
     disable_env_checker=True,
     kwargs={

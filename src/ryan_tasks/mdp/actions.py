@@ -194,8 +194,8 @@ class NormalizedJointPositionAction(ActionTerm):
             self._prev_cmd = radians.clone()
 
         # apply position commands
-        self._asset.set_joint_position_target_index(
-            target=radians, joint_ids=self._joint_ids_wp
+        self._asset.actuators.target_command.set_position_index(
+            value=radians, joint_ids=self._joint_ids_wp
         )
 
     def reset(self, env_ids: Sequence[int] | None = None) -> None:
@@ -214,7 +214,7 @@ class NormalizedJointPositionAction(ActionTerm):
 
 def randomize_action_delay(
     env: ManagerBasedEnv,
-    env_ids: torch.Tensor,
+    env_ids: torch.Tensor | slice,
     action_name: str,
     min_delay: int,
     max_delay: int,
@@ -228,7 +228,6 @@ def randomize_action_delay(
     term: NormalizedJointPositionAction = env.action_manager.get_term(action_name)
     if getattr(term, "_delay_per_env", None) is None:
         return
-    delays = torch.randint(
-        min_delay, max_delay + 1, (env_ids.shape[0],), device=term.device
+    term._delay_per_env[env_ids] = torch.randint_like(
+        term._delay_per_env[env_ids], min_delay, max_delay + 1
     )
-    term._delay_per_env[env_ids] = delays

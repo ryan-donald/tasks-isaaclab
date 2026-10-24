@@ -25,11 +25,12 @@ from isaaclab.managers import (
     SceneEntityCfg,
 )
 from isaaclab.markers import VisualizationMarkersCfg
-from isaaclab.sim.schemas.schemas_cfg import MassPropertiesCfg, RigidBodyPropertiesCfg
+from isaaclab.sim.schemas import MassCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.sim.spawners.materials.visual_materials_cfg import PreviewSurfaceCfg
 from isaaclab.utils.configclass import configclass
 from isaaclab.utils.noise import UniformNoiseCfg as Unoise
+from isaaclab_physx.sim.schemas import PhysxRigidBodyCfg
 
 from ryan_tasks.robots.so_arm101 import SO_ARM101_URDF_CFG
 from ryan_tasks.tasks.push import mdp
@@ -73,8 +74,8 @@ class SoArm101PushTNormalizedEnvCfg(SoArm101PushNormalizedEnvCfg):
             ),
             spawn=UsdFileCfg(
                 usd_path=T_BLOCK_USD,
-                mass_props=MassPropertiesCfg(mass=_T_MASS),
-                rigid_props=RigidBodyPropertiesCfg(
+                mass_props=MassCfg(mass=_T_MASS),
+                rigid_props=PhysxRigidBodyCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
                     max_angular_velocity=1000.0,

@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Direct-workflow port of Ryan-Reach-SO-ARM101-Normalized-v0.
+"""Direct-workflow port of Ryan-Reach-SO-ARM101-Normalized.
 
 Keeps the manager-based task's operation order, so it reproduces it bit for bit. The
 per-step math is replayed as CUDA graphs, and the reset and resample checks, which sync
@@ -170,7 +170,7 @@ class SoArm101ReachDirectEnv(DirectRLEnv):
         self._process_actions_step = CapturedStep(self._process_actions)
         self._joint_targets_step = CapturedStep(self._compute_joint_targets)
         self._rewards_step = CapturedStep(self._compute_rewards)
-        self._observations_step = CapturedStep(self._compute_observations)
+        self._observations_step = CapturedStep(self._write_observations)
 
     # callers such as ryan_ppo's staggered starts replace episode_length_buf, which
     # invalidates the predicted reset step.
@@ -222,7 +222,7 @@ class SoArm101ReachDirectEnv(DirectRLEnv):
             self._next_reset_step = self.common_step_counter + steps_left
 
         self._update_command()
-        self.obs_buf = self._get_observations()
+        self.obs_buf = self._compute_observations()
         return (
             self.obs_buf,
             self.reward_buf,
@@ -250,8 +250,8 @@ class SoArm101ReachDirectEnv(DirectRLEnv):
         if self.cfg.deadband > 0.0:
             self._robot.data.joint_pos  # refresh the buffer the graph reads
         self._joint_targets_step()
-        self._robot.set_joint_position_target_index(
-            target=self._joint_targets, joint_ids=self._action_joint_ids_wp
+        self._robot.actuators.target_command.set_position_index(
+            value=self._joint_targets, joint_ids=self._action_joint_ids_wp
         )
 
     def _compute_joint_targets(self):
@@ -374,7 +374,7 @@ class SoArm101ReachDirectEnv(DirectRLEnv):
         # a new tensor each step, as callers keep the previous observation.
         return {"policy": self._obs_buf.clone()}
 
-    def _compute_observations(self):
+    def _write_observations(self):
         cfg = self.cfg
         data = self._robot.data
         ids = self._obs_joint_ids

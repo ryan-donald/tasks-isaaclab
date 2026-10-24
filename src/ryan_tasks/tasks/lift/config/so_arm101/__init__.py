@@ -9,7 +9,7 @@ PPO_CFG = f"{AGENTS}.rsl_rl_ppo_cfg:LiftCubePPORunnerCfg"
 # physics=newton_mjwarp for Newton (MJWarp).
 
 gym.register(
-    id="Ryan-Lift-Cube-SO-ARM101-Normalized-v0",
+    id="Ryan-Lift-Cube-SO-ARM101-Normalized",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -19,7 +19,7 @@ gym.register(
 )
 
 gym.register(
-    id="Ryan-Lift-Cube-SO-ARM101-Normalized-Play-v0",
+    id="Ryan-Lift-Cube-SO-ARM101-Normalized-Play",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -31,7 +31,7 @@ gym.register(
 # lift with hold-start resets and a bonus for holding a still arm command at the
 # goal.
 gym.register(
-    id="Ryan-Lift-Cube-SO-ARM101-Normalized-Settle-v0",
+    id="Ryan-Lift-Cube-SO-ARM101-Normalized-Settle",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={
@@ -41,7 +41,7 @@ gym.register(
 )
 
 gym.register(
-    id="Ryan-Lift-Cube-SO-ARM101-Normalized-Settle-Play-v0",
+    id="Ryan-Lift-Cube-SO-ARM101-Normalized-Settle-Play",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
     disable_env_checker=True,
     kwargs={

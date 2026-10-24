@@ -36,8 +36,8 @@ def _object_goal_distance_xy(
     command = env.command_manager.get_command(command_name)
     # the command is in the robot root frame.
     des_pos_w, _ = combine_frame_transforms(
-        robot.data.root_state_w.torch[:, :3],
-        robot.data.root_state_w.torch[:, 3:7],
+        robot.data.root_link_pose_w.torch[:, :3],
+        robot.data.root_link_pose_w.torch[:, 3:7],
         command[:, :3],
     )
     return torch.norm(des_pos_w[:, :2] - object.data.root_pos_w.torch[:, :2], dim=1)

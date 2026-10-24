@@ -14,6 +14,8 @@ from pathlib import Path
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
+from isaaclab_newton.sim.schemas import NewtonArticulationCfg
+from isaaclab_physx.sim.schemas import PhysxArticulationCfg, PhysxRigidBodyCfg
 
 URDF_ASSETS_DATA_DIR = Path(__file__).resolve().parent / "data" / "so101"
 
@@ -39,17 +41,21 @@ def _arm(value: float) -> dict[str, float]:
 SO_ARM101_URDF_CFG = ArticulationCfg(
     spawn=sim_utils.UrdfFileCfg(
         asset_path=f"{URDF_ASSETS_DATA_DIR}/so101_new_calib.urdf",
-        fix_base=True,
+        fix_base=False,
+        fix_root_link=True,
         merge_fixed_joints=False,
         activate_contact_sensors=False,
-        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+        rigid_props=PhysxRigidBodyCfg(
             disable_gravity=False, max_depenetration_velocity=5.0
         ),
-        articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=False,
-            solver_position_iteration_count=4,
-            solver_velocity_iteration_count=0,
-        ),
+        articulation_props=[
+            PhysxArticulationCfg(
+                enabled_self_collisions=False,
+                solver_position_iteration_count=4,
+                solver_velocity_iteration_count=0,
+            ),
+            NewtonArticulationCfg(self_collision_enabled=False),
+        ],
         # the Newton backend reads the drive gains from the imported joints.
         joint_drive=sim_utils.UrdfConverterCfg.JointDriveCfg(
             gains=sim_utils.UrdfConverterCfg.JointDriveCfg.PDGainsCfg(

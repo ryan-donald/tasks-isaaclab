@@ -32,13 +32,14 @@ from isaaclab.managers import (
     SceneEntityCfg,
 )
 from isaaclab.sensors import ContactSensorCfg
-from isaaclab.sim.schemas.schemas_cfg import MassPropertiesCfg, RigidBodyPropertiesCfg
+from isaaclab.sim.schemas import MassCfg
 from isaaclab.sim.spawners.from_files.from_files_cfg import UsdFileCfg
 from isaaclab.sim.spawners.materials.physics_materials_cfg import RigidBodyMaterialCfg
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 from isaaclab.utils.configclass import configclass
 from isaaclab.utils.noise import NoiseModelWithAdditiveBiasCfg
 from isaaclab.utils.noise import UniformNoiseCfg as Unoise
+from isaaclab_physx.sim.schemas import PhysxRigidBodyCfg
 from isaaclab_tasks.core.lift.lift_env_cfg import LiftEnvCfg
 
 from ryan_tasks.robots.so_arm101 import (
@@ -177,7 +178,7 @@ class SoArm101PushNormalizedEnvCfg(LiftEnvCfg):
     def __post_init__(self):
         super().__post_init__()
 
-        # turn off what Isaac Lab 3.0-EA's lift base adds for its reorient task.
+        # turn off what Isaac Lab 3.0's lift base adds for its reorient task.
         # conditional_reset prefills a bank of grasp states and can loop forever
         # when it cannot fill it; a push needs none.
         self.events.conditional_reset = None
@@ -266,6 +267,7 @@ class SoArm101PushNormalizedEnvCfg(LiftEnvCfg):
 
         # no table: the ground plane at z=0 is the pushing surface.
         self.scene.table = None
+        self.scene.table_material = None
         self.scene.plane.init_state.pos = (0.0, 0.0, 0.0)
         self.scene.ee_frame = None
 
@@ -277,8 +279,8 @@ class SoArm101PushNormalizedEnvCfg(LiftEnvCfg):
             spawn=UsdFileCfg(
                 usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Blocks/DexCube/dex_cube_instanceable.usd",
                 scale=(0.5, 0.5, 0.5),
-                mass_props=MassPropertiesCfg(mass=_CUBE_MASS),
-                rigid_props=RigidBodyPropertiesCfg(
+                mass_props=MassCfg(mass=_CUBE_MASS),
+                rigid_props=PhysxRigidBodyCfg(
                     solver_position_iteration_count=16,
                     solver_velocity_iteration_count=1,
                     max_angular_velocity=1000.0,

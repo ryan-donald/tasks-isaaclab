@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 def hold_joint_position_target(
     env: ManagerBasedRLEnv,
-    env_ids: torch.Tensor,
+    env_ids: torch.Tensor | slice,
     asset_cfg: SceneEntityCfg,
     position: float,
 ) -> None:
@@ -30,9 +30,10 @@ def hold_joint_position_target(
     """
     asset = env.scene[asset_cfg.name]
     joint_ids = asset_cfg.joint_ids
-    if isinstance(joint_ids, slice):
-        joint_ids = list(range(asset.num_joints))[joint_ids]
-    target = torch.full(
-        (len(env_ids), len(joint_ids)), float(position), device=env.device
+    rows = env_ids
+    if not isinstance(env_ids, slice) and not isinstance(joint_ids, slice):
+        rows = env_ids[:, None]
+    target = torch.full_like(asset.data.joint_pos.torch[rows, joint_ids], position)
+    asset.actuators.target_command.set_position_index(
+        value=target, joint_ids=joint_ids, env_ids=env_ids
     )
-    asset.set_joint_position_target(target, joint_ids=joint_ids, env_ids=env_ids)

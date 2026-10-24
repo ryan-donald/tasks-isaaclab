@@ -5,7 +5,7 @@
 
 """rsl_rl runner configs for the SO-ARM101 reach tasks.
 
-The tuned runner follows ryan_ppo's cfg/Ryan-Reach-SO-ARM101-Normalized-v0.ini:
+The tuned runner follows ryan_ppo's cfg/Ryan-Reach-SO-ARM101-Normalized.ini:
 separate 64x64 ELU actor and critic, both with observation normalization, 16
 minibatches, adaptive learning rate on a 0.008 KL target.
 """
@@ -62,7 +62,7 @@ class ReachMatchedPPORunnerCfg(ReachPPORunnerCfg):
 
     skrl and rl_games' adaptive-LR rules collapse the lr at the tuned 16
     minibatches, so the cross-framework comparison runs at this setting.
-    Matches ppo/cfg/Ryan-Reach-SO-ARM101-Normalized-Matched-v0.ini.
+    Matches ppo/cfg/Ryan-Reach-SO-ARM101-Normalized-Matched.ini.
     """
 
     experiment_name = "so_arm101_reach_matched"

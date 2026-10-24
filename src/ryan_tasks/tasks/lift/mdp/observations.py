@@ -107,8 +107,8 @@ def object_position_in_robot_root_frame(
     object: RigidObject = env.scene[object_cfg.name]
     object_pos_w = object.data.root_pos_w.torch[:, :3]
     object_pos_b, _ = subtract_frame_transforms(
-        robot.data.root_state_w.torch[:, :3],
-        robot.data.root_state_w.torch[:, 3:7],
+        robot.data.root_link_pose_w.torch[:, :3],
+        robot.data.root_link_pose_w.torch[:, 3:7],
         object_pos_w,
     )
     return object_pos_b

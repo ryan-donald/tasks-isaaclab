@@ -45,7 +45,7 @@ def _object_clearance(
     ``(hx, hy, hz)`` for a cuboid.
     """
     # quaternion (x, y, z, w).
-    quat = object.data.root_state_w.torch[:, 3:7]
+    quat = object.data.root_link_pose_w.torch[:, 3:7]
     x, y, z, w = quat[:, 0], quat[:, 1], quat[:, 2], quat[:, 3]
     # third row of the rotation matrix: world-z components of the box's local axes.
     r20 = 2.0 * (x * z - w * y)
@@ -113,7 +113,7 @@ def object_grasped(
     manager resolves its ``joint_ids``.
     """
     robot: Articulation = env.scene[gripper_cfg.name]
-    gripper_pos = robot.data.joint_pos.torch[:, gripper_cfg.joint_ids[0]]
+    gripper_pos = robot.data.joint_pos.torch[:, gripper_cfg.joint_ids][:, 0]
     closing = ((gripper_open - gripper_pos) / gripper_open).clamp(0.0, 1.0)
     in_jaw = object_ee_distance(env, grasp_std, object_cfg, ee_cfg, ee_offset)
     return in_jaw * closing
@@ -134,11 +134,10 @@ def object_ee_distance(
     """
     object: RigidObject = env.scene[object_cfg.name]
     robot: Articulation = env.scene[ee_cfg.name]
-    body_id = ee_cfg.body_ids[0]
     # end-effector position: gripper_link body pose + body-frame offset -> world.
-    ee_pos_w = robot.data.body_pos_w.torch[:, body_id, :]
+    ee_pos_w = robot.data.body_pos_w.torch[:, ee_cfg.body_ids][:, 0]
     # quaternion (x, y, z, w).
-    ee_quat_w = robot.data.body_quat_w.torch[:, body_id, :]
+    ee_quat_w = robot.data.body_quat_w.torch[:, ee_cfg.body_ids][:, 0]
     offset = ee_pos_w.new_tensor(ee_offset).expand_as(ee_pos_w)
     ee_w = ee_pos_w + quat_apply(ee_quat_w, offset)
     # distance of the end-effector to the object: (num_envs,)
@@ -164,8 +163,8 @@ def object_goal_distance(
     # compute the desired position in the world frame
     des_pos_b = command[:, :3]
     des_pos_w, _ = combine_frame_transforms(
-        robot.data.root_state_w.torch[:, :3],
-        robot.data.root_state_w.torch[:, 3:7],
+        robot.data.root_link_pose_w.torch[:, :3],
+        robot.data.root_link_pose_w.torch[:, 3:7],
         des_pos_b,
     )
     # distance of the object to the goal: (num_envs,)
@@ -283,7 +282,7 @@ def gripper_level(
     """
     robot: Articulation = env.scene[ee_cfg.name]
     object: RigidObject = env.scene[object_cfg.name]
-    q = robot.data.body_quat_w.torch[:, ee_cfg.body_ids[0]]
+    q = robot.data.body_quat_w.torch[:, ee_cfg.body_ids][:, 0]
     down = q.new_tensor((0.0, 0.0, -1.0)).expand(env.num_envs, 3)
     fingers_z = quat_apply(q, down)[:, 2]
     lifted = object.data.root_pos_w.torch[:, 2] > minimal_height
