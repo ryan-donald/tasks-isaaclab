@@ -32,7 +32,7 @@ from isaaclab.utils.configclass import configclass
 from isaaclab.utils.noise import UniformNoiseCfg as Unoise
 from isaaclab_physx.sim.schemas import PhysxRigidBodyCfg
 
-from ryan_tasks.robots.so_arm101 import SO_ARM101_URDF_CFG
+from ryan_tasks.robots.so_arm101 import MAX_SLEW_RAD_S, SO_ARM101_URDF_CFG
 from ryan_tasks.tasks.push import mdp
 from ryan_tasks.tasks.push.config.so_arm101.joint_pos_env_cfg import (
     _EE_OFFSET,
@@ -163,7 +163,7 @@ class SoArm101PushTNormalizedEnvCfg(SoArm101PushNormalizedEnvCfg):
         ]
         self.events.hold_wrist_roll = None
         # half the cube push's servo speed limit: deploy with Goal_Velocity 500.
-        self.actions.arm_action.max_slew_rad_s = 0.732
+        self.actions.arm_action.max_slew_rad_s = 0.5 * MAX_SLEW_RAD_S
 
         # start pose (and zero action): gripper pitched ~60 deg down, tip ~8 cm up
         # and 16 cm out, just behind the T.

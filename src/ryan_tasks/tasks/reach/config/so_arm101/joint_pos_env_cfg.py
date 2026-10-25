@@ -76,14 +76,7 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
         super().__post_init__()
         self.scene.num_envs = 8192
 
-        # arm joint friction is off: PhysX joint friction keeps the arm from settling.
-        self.scene.robot = SO_ARM101_URDF_CFG.replace(
-            prim_path="{ENV_REGEX_NS}/Robot",
-            actuators={
-                **SO_ARM101_URDF_CFG.actuators,
-                "arm": SO_ARM101_URDF_CFG.actuators["arm"].replace(friction=0.0),
-            },
-        )
+        self.scene.robot = SO_ARM101_URDF_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
 
         self.scene.table = None
         self.scene.ground.init_state.pos = (0.0, 0.0, 0.0)
@@ -276,6 +269,18 @@ class SoArm101ReachNormalizedEnvCfg(ReachEnvCfg):
             },
         )
 
+        # armature domain randomization, 0.5-2x: the fit trades it against the latency.
+        self.events.randomize_armature = EventTerm(
+            func=mdp.randomize_joint_parameters,
+            mode="startup",
+            params={
+                "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+                "armature_distribution_params": (0.5, 2.0),
+                "operation": "scale",
+                "distribution": "log_uniform",
+            },
+        )
+
         # action delay of 1-3 steps, around the real robot's 37.6 ms latency (2.25
         # steps at 60 Hz).
         self.events.randomize_action_delay = EventTerm(
@@ -301,6 +306,7 @@ class SoArm101ReachNormalizedEnvCfg_PLAY(SoArm101ReachNormalizedEnvCfg):
         self.observations.policy.enable_corruption = False
         self.events.randomize_gains = None
         self.events.randomize_joint_friction = None
+        self.events.randomize_armature = None
         self.events.randomize_action_delay = EventTerm(
             func=mdp.randomize_action_delay,
             mode="reset",

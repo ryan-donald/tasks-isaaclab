@@ -78,6 +78,18 @@ class EventCfg:
         },
     )
 
+    # armature domain randomization, 0.5-2x: the fit trades it against the latency.
+    randomize_armature = EventTerm(
+        func=mdp.randomize_joint_parameters,
+        mode="startup",
+        params={
+            "asset_cfg": SceneEntityCfg("robot", joint_names=".*"),
+            "armature_distribution_params": (0.5, 2.0),
+            "operation": "scale",
+            "distribution": "log_uniform",
+        },
+    )
+
     randomize_action_delay = EventTerm(
         func=randomize_action_delay,
         mode="reset",
@@ -158,12 +170,6 @@ class SoArm101ReachDirectEnvCfg(DirectRLEnvCfg):
     def __post_init__(self):
         self.sim.physics = reach_physics()
 
-        self.scene.robot = SO_ARM101_URDF_CFG.replace(
-            prim_path="{ENV_REGEX_NS}/Robot",
-            actuators={
-                **SO_ARM101_URDF_CFG.actuators,
-                "arm": SO_ARM101_URDF_CFG.actuators["arm"].replace(friction=0.0),
-            },
-        )
+        self.scene.robot = SO_ARM101_URDF_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         self.scene.table = None
         self.scene.ground.init_state.pos = (0.0, 0.0, 0.0)

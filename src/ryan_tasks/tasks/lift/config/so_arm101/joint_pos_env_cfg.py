@@ -158,14 +158,7 @@ class SoArm101LiftNormalizedEnvCfg(LiftEnvCfg):
         )
         self.sim.physics = SoArm101LiftPhysicsCfg()
 
-        # arm joint friction is off: PhysX joint friction keeps the arm from settling.
-        self.scene.robot = SO_ARM101_URDF_CFG.replace(
-            prim_path="{ENV_REGEX_NS}/Robot",
-            actuators={
-                **SO_ARM101_URDF_CFG.actuators,
-                "arm": SO_ARM101_URDF_CFG.actuators["arm"].replace(friction=0.0),
-            },
-        )
+        self.scene.robot = SO_ARM101_URDF_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
         # contact sensing on the gripper needs the report API on the nested links.
         self.scene.robot.spawn = copy.deepcopy(self.scene.robot.spawn)
         self.scene.robot.spawn.activate_contact_sensors = True

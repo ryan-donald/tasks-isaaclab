@@ -9,6 +9,7 @@ The URDF is TheRobotStudio's ``so101_new_calib.urdf`` with the joint limits of
 the real arm. The actuator values are fitted to the real servos.
 """
 
+import math
 from pathlib import Path
 
 import isaaclab.sim as sim_utils
@@ -16,19 +17,22 @@ from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
 from isaaclab_newton.sim.schemas import NewtonArticulationCfg
 from isaaclab_physx.sim.schemas import PhysxArticulationCfg, PhysxRigidBodyCfg
+from isaaclab_tasks.utils import preset
 
 URDF_ASSETS_DATA_DIR = Path(__file__).resolve().parent / "data" / "so101"
 
-# encoder resolution, rad, and the servo deadband in normalized units (off).
-POS_QUANTUM = 0.00182
+# encoder resolution, rad (4096 ticks per turn), and the servo deadband in
+# normalized units (off).
+POS_QUANTUM = 2 * math.pi / 4096
 ACTION_DEADBAND = 0.0
 
-# servo speed limit, rad/s, at Goal_Velocity 1000. 0.0 disables.
-MAX_SLEW_RAD_S = 1.464
-
-# servo setpoint acceleration limit, rad/s^2, fitted to the real servos. 0.0
+# servo speed limit, rad/s, at Goal_Velocity 1000, fitted to the real arm. 0.0
 # disables.
-MAX_ACCEL_RAD_S2 = 60.0
+MAX_SLEW_RAD_S = 1.57
+
+# servo setpoint acceleration limit, rad/s^2, fitted to the real arm. 0.0
+# disables.
+MAX_ACCEL_RAD_S2 = 600.0
 
 ARM_JOINTS = ("shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll")
 
@@ -69,15 +73,31 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
         joint_vel={".*": 0.0},
     ),
     actuators={
-        # fitted to the real servos, which are much softer than their datasheet.
+        # one STS3215 per joint, fitted to the real arm per physics backend (PhysX
+        # is the default).
         "arm": ImplicitActuatorCfg(
             joint_names_expr=["shoulder_.*", "elbow_flex", "wrist_.*"],
-            effort_limit_sim=1.9,
+            effort_limit_sim=preset(default=2.48, newton_mjwarp=2.82),
             velocity_limit_sim=4.99,
-            armature=0.0045,
-            stiffness=_arm(35.6),
-            damping=_arm(2.25),
-            friction=_arm(0.12),
+            armature=0.015,
+            stiffness=preset(default=_arm(21.6), newton_mjwarp=_arm(18.8)),
+            damping=preset(default=_arm(1.65), newton_mjwarp=_arm(1.20)),
+            # load-dependent gearbox friction: a unitless coefficient on PhysX, N*m
+            # on Newton.
+            friction=preset(
+                default={
+                    "shoulder_pan": 0.25,
+                    "shoulder_lift": 0.014,
+                    "elbow_flex": 0.33,
+                    "wrist_.*": 0.23,
+                },
+                newton_mjwarp={
+                    "shoulder_pan": 0.18,
+                    "shoulder_lift": 0.41,
+                    "elbow_flex": 0.38,
+                    "wrist_.*": 0.23,
+                },
+            ),
         ),
         "gripper": ImplicitActuatorCfg(
             joint_names_expr=["gripper"],

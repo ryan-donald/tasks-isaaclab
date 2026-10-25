@@ -45,6 +45,8 @@ from isaaclab_tasks.core.lift.lift_env_cfg import LiftEnvCfg
 from ryan_tasks.robots.so_arm101 import (
     GRIPPER_PRIM,
     JAW_PRIM,
+    MAX_ACCEL_RAD_S2,
+    MAX_SLEW_RAD_S,
     SO_ARM101_URDF_CFG,
     enable_nested_contact_reporting,
 )
@@ -321,8 +323,8 @@ class SoArm101PushNormalizedEnvCfg(LiftEnvCfg):
             scale=100.0,
             use_default_offset=True,
             delay_steps=3,
-            max_slew_rad_s=1.464,  # servo speed limit, Goal_Velocity 1000
-            max_accel_rad_s2=60.0,  # servo setpoint acceleration limit
+            max_slew_rad_s=MAX_SLEW_RAD_S,
+            max_accel_rad_s2=MAX_ACCEL_RAD_S2,
         )
         # the gripper is a pusher, not an action.
         self.actions.gripper_action = None
