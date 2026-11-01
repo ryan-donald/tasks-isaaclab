@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ryan_tasks"
 version = "0.2.0"
-description = "Isaac Lab tasks for the SO-ARM101 robot arm."
+description = "Isaac Lab tasks for the SO-ARM101 and reBot B601-DM robot arms."
 readme = "README.md"
 license = "BSD-3-Clause"
 license-files = ["LICENSE", "LICENSES/*"]

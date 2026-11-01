@@ -28,8 +28,7 @@ gym.register(
     },
 )
 
-# lift with hold-start resets and a bonus for holding a still arm command at the
-# goal.
+# lift with a bonus for holding a still arm command at the goal.
 gym.register(
     id="Ryan-Lift-Cube-SO-ARM101-Normalized-Settle",
     entry_point="isaaclab.envs:ManagerBasedRLEnv",
@@ -46,6 +45,29 @@ gym.register(
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{ENV_CFG}:SoArm101LiftNormalizedSettleEnvCfg_PLAY",
+        "rsl_rl_cfg_entry_point": PPO_CFG,
+    },
+)
+
+# pick the cube, place it on a random table target, return to the default pose.
+PLACE_CFG = f"{__name__}.place_env_cfg"
+
+gym.register(
+    id="Ryan-Place-Cube-SO-ARM101-Normalized",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{PLACE_CFG}:SoArm101PlaceNormalizedEnvCfg",
+        "rsl_rl_cfg_entry_point": PPO_CFG,
+    },
+)
+
+gym.register(
+    id="Ryan-Place-Cube-SO-ARM101-Normalized-Play",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{PLACE_CFG}:SoArm101PlaceNormalizedEnvCfg_PLAY",
         "rsl_rl_cfg_entry_point": PPO_CFG,
     },
 )

@@ -3,4 +3,4 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Isaac Lab tasks for the SO-ARM101 robot arm."""
+"""Isaac Lab tasks for the SO-ARM101 and reBot B601-DM robot arms."""

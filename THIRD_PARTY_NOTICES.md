@@ -18,3 +18,4 @@ Paths are relative to `src/ryan_tasks/`.
 | Material | Source | License |
 |---|---|---|
 | `robots/data/so101/so101_new_calib.urdf` (modified, see the comment at its top), `robots/data/so101/assets/`, and `robots/data/so101/so101_gripper_hulls.npz` (collision hulls computed from those meshes) | [SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100), TheRobotStudio | Apache-2.0, [LICENSES/Apache-2.0.txt](LICENSES/Apache-2.0.txt) |
+| `robots/data/rebot_b601/urdf/rebot_b601.urdf` (modified, see the comment at its top) and `robots/data/rebot_b601/meshes/` | [reBot-DevArm](https://github.com/Seeed-Projects/reBot-DevArm) `Rebot_Arm_description/DM`, Seeed Studio | CERN-OHL-W-2.0, [LICENSES/CERN-OHL-W-2.0.txt](LICENSES/CERN-OHL-W-2.0.txt) |

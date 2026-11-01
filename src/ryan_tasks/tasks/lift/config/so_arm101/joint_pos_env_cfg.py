@@ -596,12 +596,10 @@ class SoArm101LiftNormalizedEnvCfg_PLAY(SoArm101LiftNormalizedEnvCfg):
 class SoArm101LiftNormalizedSettleEnvCfg(SoArm101LiftNormalizedEnvCfg):
     """Lift with a bonus for holding a still arm command at the goal.
 
-    Uses the reach task's action scale and light smoothness terms, starts a fraction
-    of episodes from a banked hold state, and drops the terms that bound the arm
-    command (action_l2, action_past_limits, the arm_command_rate / joint_vel ramps).
+    Uses the reach task's action scale and light smoothness terms, and drops the terms
+    that bound the arm command (action_l2, action_past_limits, the arm_command_rate /
+    joint_vel ramps).
     """
-
-    hold_fraction: float = 0.25
 
     def __post_init__(self):
         super().__post_init__()
@@ -614,12 +612,6 @@ class SoArm101LiftNormalizedSettleEnvCfg(SoArm101LiftNormalizedEnvCfg):
         self.rewards.action_rate.weight = -1.0
         self.curriculum = TableContactCurriculumCfg()
 
-        self.commands.object_pose.class_type = mdp.HoldAwarePoseCommand
-        self.events.hold_start = EventTerm(
-            func=mdp.hold_start_reset,
-            mode="reset",
-            params={"fraction": self.hold_fraction},
-        )
         # 1.5 cm goal kernel; 10 normalized units (0.1 action units) of command
         # change per step.
         self.rewards.settled_at_goal = RewTerm(
@@ -636,9 +628,7 @@ class SoArm101LiftNormalizedSettleEnvCfg(SoArm101LiftNormalizedEnvCfg):
 
 @configclass
 class SoArm101LiftNormalizedSettleEnvCfg_PLAY(SoArm101LiftNormalizedSettleEnvCfg):
-    """Evaluation config for the Settle task: the base Play settings, no hold starts."""
-
-    hold_fraction: float = 0.0
+    """Evaluation config for the Settle task: the base Play settings."""
 
     def __post_init__(self):
         super().__post_init__()

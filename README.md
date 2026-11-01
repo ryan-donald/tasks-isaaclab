@@ -7,13 +7,15 @@ Isaac Lab tasks for the SO-ARM101, an open-source robot arm. I train policies on
 
 # Tasks
 
-Every task runs on Isaac Sim PhysX by default. Add `physics=newton_mjwarp` to the command line to run it on Newton (MJWarp) instead. A `-Play` task is the evaluation variant of its task: fewer envs, no observation noise, less domain randomization, and the action delay pinned to its measured value.
+Every task runs on Isaac Sim PhysX by default. Add `physics=newton_mjwarp` to the command line to run an SO-ARM101 task on Newton (MJWarp) instead. A `-Play` task is the evaluation variant of its task: fewer envs, no observation noise, less domain randomization, and the action delay pinned to its measured value.
 
 | Family | Task IDs |
 |---|---|
 | Reach | `Ryan-Reach-SO-ARM101-Normalized` (and `-Play`), `-Matched` (library-neutral agent configs for benchmarking), `-Direct` (direct-workflow port, same MDP) |
 | Lift | `Ryan-Lift-Cube-SO-ARM101-Normalized-Settle` (and `-Settle-Play`): lift to a goal with a bonus for holding still there; `Ryan-Lift-Cube-SO-ARM101-Normalized` (and `-Play`): the base lift |
 | Push | `Ryan-Push-Cube-SO-ARM101-Normalized`, `Ryan-Push-T-SO-ARM101-Normalized` (each with `-Play`) |
+| B601-DM reach | `Ryan-Reach-B601-DM` (and `-Play`), `-Direct` (direct-workflow port, same MDP): the SO-ARM101 reach on this arm. PhysX only |
+| B601-DM pick and place | `Ryan-Place-Cube-B601-DM` (and `-Play`), `-Direct` (direct-workflow port, same MDP). PhysX only |
 
 # Layout
 
@@ -21,12 +23,14 @@ The package follows the Isaac Lab 3.0 external-project template:
 
 ```
 src/ryan_tasks/
-  robots/            the SO-ARM101 config and its asset files in data/
-  mdp/               the servo and encoder model shared by reach, lift and push
+  robots/            the SO-ARM101 and B601-DM configs and their asset files in data/
+  mdp/               the servo and encoder model shared by reach, lift and push, and
+                     the B601-DM command path
   tasks/<family>/    one folder per task family: mdp/, a base cfg where there is one,
-                     and config/so_arm101/ with the task cfgs, registrations and
+                     and config/<robot>/ with the task cfgs, registrations and
                      agent configs
-tests/               registration test
+tests/               registration test, and compare_direct.py, which checks a direct
+                     task against its manager-based twin
 ```
 
 # Installation
