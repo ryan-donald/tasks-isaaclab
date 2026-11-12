@@ -38,7 +38,6 @@ from ryan_tasks.robots.rebot_b601 import (
 )
 from ryan_tasks.robots.so_arm101 import MAX_SLEW_RAD_S
 from ryan_tasks.tasks.reach.config.so_arm101.direct_env import CapturedStep
-from ryan_tasks.utils import RewardTermLog
 
 from . import env_cfg as task
 from . import params as p
@@ -135,7 +134,7 @@ class PlaceDirectEnv(DirectRLEnv):
         self._obs = torch.zeros(num_envs, cfg.observation_space, device=device)
 
         self._reward = torch.zeros(num_envs, device=device)
-        self.reward_manager = RewardTermLog(list(TERM_NAMES), num_envs, device)
+        self._step_reward = torch.zeros(num_envs, len(TERM_NAMES), device=device)
         self._diverged = torch.zeros(num_envs, dtype=torch.bool, device=device)
 
         self._process_actions_step = CapturedStep(self._process_actions)
@@ -216,7 +215,7 @@ class PlaceDirectEnv(DirectRLEnv):
             self._action,
             self._prev_action,
         )
-        step_reward = self.reward_manager._step_reward
+        step_reward = self._step_reward
         step_reward.copy_(self.logic.terms * self._weights)
         torch.sum(step_reward, dim=1, out=self._reward).mul_(self.step_dt)
 

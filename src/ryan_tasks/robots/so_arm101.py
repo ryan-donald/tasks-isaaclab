@@ -77,11 +77,11 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
         # is the default).
         "arm": ImplicitActuatorCfg(
             joint_names_expr=["shoulder_.*", "elbow_flex", "wrist_.*"],
-            effort_limit_sim=preset(default=2.48, newton_mjwarp=2.82),
-            velocity_limit_sim=4.99,
-            armature=0.015,
-            stiffness=preset(default=_arm(21.6), newton_mjwarp=_arm(18.8)),
-            damping=preset(default=_arm(1.65), newton_mjwarp=_arm(1.20)),
+            joint_effort_limit=preset(default=2.48, newton_mjwarp=2.82, newton_steel=3.32),
+            joint_velocity_limit=4.99,
+            armature=preset(default=0.015, newton_steel=0.0038),
+            stiffness=preset(default=_arm(21.6), newton_mjwarp=_arm(18.8), newton_steel=_arm(24.4)),
+            damping=preset(default=_arm(1.65), newton_mjwarp=_arm(1.20), newton_steel=_arm(1.28)),
             # load-dependent gearbox friction: a unitless coefficient on PhysX, N*m
             # on Newton.
             friction=preset(
@@ -97,12 +97,18 @@ SO_ARM101_URDF_CFG = ArticulationCfg(
                     "elbow_flex": 0.38,
                     "wrist_.*": 0.23,
                 },
+                newton_steel={
+                    "shoulder_pan": 0.15,
+                    "shoulder_lift": 0.48,
+                    "elbow_flex": 0.44,
+                    "wrist_.*": 0.24,
+                },
             ),
         ),
         "gripper": ImplicitActuatorCfg(
             joint_names_expr=["gripper"],
-            effort_limit_sim=2.5,
-            velocity_limit_sim=3.18,
+            joint_effort_limit=2.5,
+            joint_velocity_limit=3.18,
             armature=0.03,
             stiffness=17.8,
             damping=1.5,

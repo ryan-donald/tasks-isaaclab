@@ -77,7 +77,8 @@ with launch_simulation(None, args):
         log["reward"].append(reward.clone())
         log["term"].append(term.clone())
         log["done"].append(trunc.clone())
-        log["terms"].append(u.reward_manager._step_reward.clone())
+        terms = getattr(u, "reward_manager", u)._step_reward
+        log["terms"].append(terms.clone())
     torch.save({k: torch.stack(v).cpu() for k, v in log.items()}, args.out)
     env.close()
 sys.exit(0)

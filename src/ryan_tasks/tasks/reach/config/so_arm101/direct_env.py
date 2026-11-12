@@ -22,10 +22,19 @@ from isaaclab.envs import DirectRLEnv
 from isaaclab.utils.math import combine_frame_transforms
 from isaaclab.utils.noise import NoiseModelWithAdditiveBias
 
-from ryan_tasks.utils import RewardTermLog
-
 if TYPE_CHECKING:
     from .direct_env_cfg import SoArm101ReachDirectEnvCfg
+
+# reward terms
+TERM_NAMES = (
+    "end_effector_position_tracking",
+    "action_rate",
+    "joint_vel",
+    "end_effector_position_tracking_fine_grained",
+    "action_l2",
+    "action_rate_near",
+    "settled_at_goal",
+)
 
 
 def _quantize(joint_pos: torch.Tensor, quantum: float) -> torch.Tensor:
@@ -153,19 +162,7 @@ class SoArm101ReachDirectEnv(DirectRLEnv):
         # -- rewards
         self._ee_body_id = self._robot.find_bodies(cfg.ee_body_name)[0][0]
         self._reward_buf = torch.zeros(num_envs, device=device)
-        self.reward_manager = RewardTermLog(
-            [
-                "end_effector_position_tracking",
-                "action_rate",
-                "joint_vel",
-                "end_effector_position_tracking_fine_grained",
-                "action_l2",
-                "action_rate_near",
-                "settled_at_goal",
-            ],
-            num_envs,
-            device,
-        )
+        self._step_reward = torch.zeros(num_envs, len(TERM_NAMES), device=device)
 
         self._process_actions_step = CapturedStep(self._process_actions)
         self._joint_targets_step = CapturedStep(self._compute_joint_targets)
@@ -335,7 +332,7 @@ class SoArm101ReachDirectEnv(DirectRLEnv):
         )
 
         # RewardManager.compute's accumulation, which scales each term by dt.
-        step_reward = self.reward_manager._step_reward
+        step_reward = self._step_reward
         self._reward_buf[:] = 0.0
         for idx, (weight, term) in enumerate(terms):
             if weight == 0.0:
